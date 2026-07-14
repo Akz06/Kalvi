@@ -1,6 +1,8 @@
-# 🎓 School ERP — Multi-Tenant
+# 🎓 Kalvi — Multi-Tenant School ERP
 
-A configurable, multi-school ERP built with **Node + Express + TypeScript**, **Prisma** (SQLite dev / PostgreSQL prod), and **React + Vite + Tailwind**.
+[![CI](https://github.com/Akz06/Kalvi/actions/workflows/ci.yml/badge.svg)](https://github.com/Akz06/Kalvi/actions/workflows/ci.yml)
+
+A configurable, multi-school ERP built with **Node + Express + TypeScript**, **Prisma + PostgreSQL** (hosted on Railway), and **React + Vite + Tailwind**.
 
 One deployment can serve **many schools** (tenants). Everything school-specific — city, board, currency, class range, sections, and which modules are enabled — is **configurable per school** through a Preferences form. No school data is hardcoded.
 

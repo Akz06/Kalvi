@@ -1,4 +1,4 @@
-name: CI
+name: CI — Kalvi School ERP
 
 on:
   push:
@@ -15,14 +15,13 @@ jobs:
       run:
         working-directory: backend
 
-    # Use PostgreSQL service container for accurate CI testing
     services:
       postgres:
         image: postgres:16-alpine
         env:
           POSTGRES_USER: erp
           POSTGRES_PASSWORD: erp_ci_password
-          POSTGRES_DB: school_erp_test
+          POSTGRES_DB: kalvi_test
         options: >-
           --health-cmd pg_isready
           --health-interval 5s
@@ -32,8 +31,9 @@ jobs:
           - 5432:5432
 
     env:
-      DATABASE_URL: "postgresql://erp:erp_ci_password@localhost:5432/school_erp_test"
-      JWT_SECRET: "ci-only-secret-not-used-in-production-0123456789abcdef"
+      DATABASE_URL: "postgresql://erp:erp_ci_password@localhost:5432/kalvi_test"
+      JWT_SECRET: "ci-only-secret-kalvi-school-erp-0123456789abcdef01234567"
+      JWT_EXPIRES_IN: "1d"
       NODE_ENV: test
 
     steps:
@@ -95,7 +95,7 @@ jobs:
 
   # ─── Summary ──────────────────────────────────────────────────────────────
   ci-passed:
-    name: CI passed
+    name: ✅ CI passed
     needs: [backend, frontend]
     runs-on: ubuntu-latest
     steps:

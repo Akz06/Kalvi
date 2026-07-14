@@ -1,7 +1,7 @@
 {
-  "name": "school-erp",
+  "name": "kalvi",
   "version": "1.0.0",
-  "description": "Multi-tenant School ERP — configurable per school, built for any K-12 institution",
+  "description": "Kalvi — Multi-tenant School ERP, configurable per school, built for any K-12 institution",
   "private": true,
   "workspaces": [
     "backend",
@@ -24,6 +24,7 @@
     "npm": ">=9.0.0"
   },
   "keywords": [
+    "kalvi",
     "school-erp",
     "multi-tenant",
     "education",
@@ -33,6 +34,6 @@
     "prisma",
     "express"
   ],
-  "author": "",
+  "author": "Akz06",
   "license": "MIT"
 }

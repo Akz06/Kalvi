@@ -22,8 +22,8 @@ the project locally, the branching model, and coding conventions.
 
 ```bash
 # 1. Clone
-git clone https://github.com/your-org/school-erp.git
-cd school-erp
+git clone https://github.com/Akz06/Kalvi.git
+cd Kalvi
 
 # 2. Backend
 cd backend

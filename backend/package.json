@@ -1,7 +1,7 @@
 {
-  "name": "school-erp-backend",
+  "name": "kalvi-backend",
   "version": "1.0.0",
-  "description": "School ERP backend API (Express + Prisma + TypeScript)",
+  "description": "Kalvi School ERP — backend API (Express + Prisma + TypeScript)",
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
