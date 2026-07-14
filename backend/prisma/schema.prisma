@@ -24,6 +24,19 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ─── HOW TO SWITCH DATABASES ────────────────────────────────────────────────
+// Dev  (default)  → provider = "sqlite",     DATABASE_URL = "file:./dev.db"
+// Prod (Postgres) → provider = "postgresql", DATABASE_URL = "postgresql://..."
+//
+// Steps to move to PostgreSQL:
+//   1. Change provider below to "postgresql"
+//   2. Set DATABASE_URL in .env to your Postgres connection string
+//      (Neon / Supabase / Railway / Render all have free tiers — see .env.example)
+//   3. Run:  npx prisma migrate dev --name init
+//
+// SQLite note: enums are modelled as String + Zod validation (SQLite has no
+// native enum type). On PostgreSQL you can convert them to native enums if desired.
+// ────────────────────────────────────────────────────────────────────────────
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
