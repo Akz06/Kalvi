@@ -1,13 +1,25 @@
+# ─── Kalvi Backend — Railway deployment config ───────────────────────────────
+# In Railway: New Service → GitHub Repo → Akz06/Kalvi → Root Directory = backend
+#
+# Railway auto-injects:
+#   DATABASE_URL  — from the linked PostgreSQL service
+#   PORT          — the port Railway assigns (do NOT hardcode 4000 in prod)
+#
+# You must set these manually in Railway → Service → Variables:
+#   JWT_SECRET           (generate: node -e "require('crypto').randomBytes(48).toString('hex')|console.log")
+#   CLIENT_ORIGIN        (your frontend Railway URL, e.g. https://kalvi-frontend.up.railway.app)
+#   NODE_ENV             production
+#   JWT_EXPIRES_IN       15m
+# ─────────────────────────────────────────────────────────────────────────────
+
 [build]
 builder = "nixpacks"
 buildCommand = "npm ci && npx prisma generate && npm run build"
 
 [deploy]
+# Railway injects $PORT — server.ts reads process.env.PORT (see env.ts)
 startCommand = "npx prisma migrate deploy && node dist/server.js"
 healthcheckPath = "/api/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 60
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
-
-[environments.production.deploy]
-startCommand = "npx prisma migrate deploy && node dist/server.js"

@@ -1,0 +1,18 @@
+# ─── Kalvi — Backend (Node.js + Express + Prisma) ───────────────────────────
+# This file tells Railway/Nixpacks exactly how to build and run the backend.
+# Set "Root Directory" = backend/ in the Railway service settings.
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = [
+  "npx prisma generate",
+  "npm run build"
+]
+
+[start]
+cmd = "npx prisma migrate deploy && node dist/server.js"
