@@ -8,7 +8,8 @@ function required(name: string, devFallback?: string): string {
   if (v && v.length > 0) return v;
   if (isProd) {
     throw new Error(
-      `Missing required environment variable "${name}". It must be set in production.`
+      `[School ERP] Missing required environment variable "${name}". ` +
+        `Set it in your Railway service variables.`
     );
   }
   if (devFallback === undefined) {
@@ -20,10 +21,11 @@ function required(name: string, devFallback?: string): string {
 const INSECURE_DEFAULT = "dev-secret-change-me";
 const JWT_SECRET = required("JWT_SECRET", INSECURE_DEFAULT);
 
-// Hard-fail if someone ships the insecure dev secret to production.
+// Hard-fail if insecure secret reaches production.
 if (isProd && (JWT_SECRET === INSECURE_DEFAULT || JWT_SECRET.length < 32)) {
   throw new Error(
-    "JWT_SECRET is insecure for production. Set a random secret of at least 32 characters."
+    "[School ERP] JWT_SECRET is insecure. Set a cryptographically random " +
+      "string of at least 32 characters in Railway service variables."
   );
 }
 
@@ -34,7 +36,10 @@ export const env = {
   CLIENT_ORIGIN: process.env.CLIENT_ORIGIN ?? "http://localhost:5173",
   DATABASE_URL: required("DATABASE_URL", "file:./dev.db"),
   JWT_SECRET,
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? "1d",
+  // Access token TTL — short in prod (15m), generous in dev (1d)
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? (isProd ? "15m" : "1d"),
+  // Refresh token TTL in days
+  REFRESH_TOKEN_EXPIRES_DAYS: Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS ?? 30),
 };
 
 export const isTest = env.NODE_ENV === "test";

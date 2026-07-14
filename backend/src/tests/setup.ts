@@ -7,21 +7,28 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const testDbPath = path.resolve(__dirname, "../../prisma/test.db");
 
 /**
- * Creates a fresh SQLite test database and pushes the Prisma schema.
- * Called once from the test files' beforeAll.
+ * Prepares the test database. Supports both SQLite (CI fast path) and
+ * PostgreSQL (full integration) via DATABASE_URL environment variable.
  */
 export function prepareTestDb() {
   process.env.NODE_ENV = "test";
-  process.env.DATABASE_URL = "file:./test.db";
-  process.env.JWT_SECRET = "test-secret";
+  process.env.JWT_SECRET = "test-secret-for-ci-only-not-production-abc123";
 
-  if (existsSync(testDbPath)) rmSync(testDbPath);
+  if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = "file:./test.db";
+  }
 
-  execSync("npx prisma db push --skip-generate --accept-data-loss", {
-    cwd: path.resolve(__dirname, "../.."),
-    stdio: "ignore",
-    env: { ...process.env, DATABASE_URL: "file:./test.db" },
-  });
+  // Tests always use the SQLite schema (schema.test.prisma) to run without
+  // needing a PostgreSQL server. The production schema (schema.prisma) uses
+  // PostgreSQL with native enums — SQLite doesn't support those.
+  execSync(
+    "npx prisma db push --schema=prisma/schema.test.prisma --skip-generate --accept-data-loss --force-reset",
+    {
+      cwd: path.resolve(__dirname, "../.."),
+      stdio: "ignore",
+      env: { ...process.env },
+    }
+  );
 }
 
 export function cleanupTestDb() {

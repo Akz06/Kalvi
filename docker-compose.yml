@@ -1,7 +1,15 @@
-# Local/production-like orchestration for the School ERP stack.
-# Uses PostgreSQL in place of the dev SQLite file. To run with Postgres,
-# set the datasource provider to "postgresql" in prisma/schema.prisma.
+# ── Local development stack ──────────────────────────────────────────────────
+# Mirrors the Railway production environment locally.
+# Usage:
+#   docker-compose up           — start everything
+#   docker-compose up db        — start only PostgreSQL (then run backend locally)
+#   docker-compose down -v      — stop and wipe volumes
+#
+# Backend & frontend can also be run natively (npm run dev) pointing at the
+# Docker PostgreSQL instance using the DATABASE_URL below.
+
 services:
+  # ── PostgreSQL 16 (same version as Railway) ──────────────────────────────
   db:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -11,12 +19,15 @@ services:
       POSTGRES_DB: school_erp
     volumes:
       - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U erp -d school_erp"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
+  # ── Backend (Express + Prisma) ────────────────────────────────────────────
   backend:
     build: ./backend
     restart: unless-stopped
@@ -26,12 +37,15 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
-      DATABASE_URL: postgresql://erp:erp_password@db:5432/school_erp?schema=public
-      JWT_SECRET: ${JWT_SECRET:-please-change-me-to-a-long-random-secret-32chars}
+      DATABASE_URL: postgresql://erp:erp_password@db:5432/school_erp
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env or shell}
+      JWT_EXPIRES_IN: "15m"
+      REFRESH_TOKEN_EXPIRES_DAYS: "30"
       CLIENT_ORIGIN: http://localhost:8080
     ports:
       - "4000:4000"
 
+  # ── Frontend (Vite → nginx) ───────────────────────────────────────────────
   frontend:
     build: ./frontend
     restart: unless-stopped

@@ -5,7 +5,7 @@ export async function getStats(schoolId: string) {
   const [students, staff, classes, sections, pendingFees, exams] = await Promise.all([
     prisma.student.count({ where: { schoolId, active: true } }),
     prisma.staff.count({ where: { schoolId, active: true } }),
-    prisma.class.count({ where: { schoolId } }),
+    prisma.schoolClass.count({ where: { schoolId } }),
     prisma.section.count({ where: { schoolId } }),
     prisma.feeRecord.aggregate({
       where: { schoolId, status: { in: ["PENDING", "PARTIAL"] } },

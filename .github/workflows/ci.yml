@@ -15,9 +15,24 @@ jobs:
       run:
         working-directory: backend
 
+    # Use PostgreSQL service container for accurate CI testing
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: erp
+          POSTGRES_PASSWORD: erp_ci_password
+          POSTGRES_DB: school_erp_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+
     env:
-      DB_PROVIDER: "sqlite"
-      DATABASE_URL: "file:./ci.db"
+      DATABASE_URL: "postgresql://erp:erp_ci_password@localhost:5432/school_erp_test"
       JWT_SECRET: "ci-only-secret-not-used-in-production-0123456789abcdef"
       NODE_ENV: test
 
@@ -39,7 +54,7 @@ jobs:
         run: npx prisma generate
 
       - name: Push schema to CI database
-        run: npx prisma db push --skip-generate
+        run: npx prisma db push --skip-generate --accept-data-loss
 
       - name: TypeScript typecheck
         run: npm run typecheck
@@ -78,7 +93,7 @@ jobs:
       - name: Build (tsc + Vite)
         run: npm run build
 
-  # ─── Summary (all jobs must pass before merge) ────────────────────────────
+  # ─── Summary ──────────────────────────────────────────────────────────────
   ci-passed:
     name: CI passed
     needs: [backend, frontend]

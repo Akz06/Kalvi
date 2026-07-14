@@ -1,7 +1,7 @@
 import { prisma } from "../../shared/prisma.js";
 
 export async function listClasses(schoolId: string) {
-  return prisma.class.findMany({
+  return prisma.schoolClass.findMany({
     where: { schoolId },
     orderBy: { level: "asc" },
     include: {

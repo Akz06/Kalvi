@@ -194,7 +194,7 @@ export async function parentLogin(input: {
 
   const token = signToken({
     sub: guardian.id,
-    role: "PARENT",
+    role: "PARENT" as const,
     email: guardian.email,
     schoolId: school.id,
   });

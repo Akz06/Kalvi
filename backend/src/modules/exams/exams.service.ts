@@ -14,7 +14,7 @@ export async function listExams(schoolId: string, classId?: string) {
 }
 
 export async function createExam(schoolId: string, body: any) {
-  const cls = await prisma.class.findFirst({ where: { id: body.classId, schoolId } });
+  const cls = await prisma.schoolClass.findFirst({ where: { id: body.classId, schoolId } });
   if (!cls) throw NotFound("The selected class was not found in your school.");
   return prisma.exam.create({
     data: { ...body, maxMarks: body.maxMarks ?? 100, schoolId },

@@ -41,7 +41,7 @@ async function makeSchool(slug: string, adminEmail: string) {
       },
     },
   });
-  const cls = await prisma.class.create({
+  const cls = await prisma.schoolClass.create({
     data: { schoolId: school.id, level: 1, name: "Class 1" },
   });
   const section = await prisma.section.create({
@@ -444,7 +444,7 @@ describe("Fees", () => {
 
   it("rejects a fee head from another class on an invoice", async () => {
     // Create a head on a different class (level 2) in the same school.
-    const cls2 = await prisma.class.create({
+    const cls2 = await prisma.schoolClass.create({
       data: { schoolId, level: 2, name: "Class 2" },
     });
     const otherHead = await prisma.feeHead.create({

@@ -34,7 +34,7 @@ export async function listFeeHeads(
 
 export async function createFeeHead(schoolId: string, body: any) {
   const { classId, name } = body;
-  const cls = await prisma.class.findFirst({ where: { id: classId, schoolId } });
+  const cls = await prisma.schoolClass.findFirst({ where: { id: classId, schoolId } });
   if (!cls) throw NotFound("The selected class was not found in your school.");
 
   const existing = await prisma.feeHead.findFirst({ where: { classId, name } });

@@ -18,7 +18,7 @@ export async function provisionClasses(schoolId: string) {
   );
 
   for (let level = min; level <= max; level++) {
-    const cls = await prisma.class.upsert({
+    const cls = await prisma.schoolClass.upsert({
       where: { schoolId_level: { schoolId, level } },
       update: {},
       create: { schoolId, level, name: `Class ${level}` },

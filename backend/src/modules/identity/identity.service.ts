@@ -121,7 +121,7 @@ export async function registerSchool(input: {
           name: admin.name,
           email: admin.email,
           password: hashed,
-          role: "ADMIN",
+          role: "ADMIN" as const,
         },
       },
     },

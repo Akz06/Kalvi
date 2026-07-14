@@ -86,7 +86,7 @@ export async function upsertGatewayConfig(schoolId: string, body: {
 
   const cfg = await prisma.paymentGatewayConfig.upsert({
     where: { schoolId },
-    create: data,
+    create: data as Parameters<typeof prisma.paymentGatewayConfig.create>[0]["data"],
     update: data,
   });
 
