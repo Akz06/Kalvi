@@ -2,13 +2,14 @@
   "name": "kalvi-backend",
   "version": "1.0.0",
   "description": "Kalvi School ERP — backend API (Express + Prisma + TypeScript)",
-  "main": "dist/server.js",
   "type": "module",
+  "main": "dist/server.js",
+
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "start:migrate": "npx prisma migrate deploy && node dist/server.js",
+    "start": "npx prisma migrate deploy && node dist/server.js",
+    "start:dev": "node dist/server.js",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",

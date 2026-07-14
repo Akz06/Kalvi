@@ -1,15 +1,11 @@
-# ─── Kalvi — Frontend (React + Vite) ────────────────────────────────────────
-# This file tells Railway/Nixpacks exactly how to build and run the frontend.
-# Set "Root Directory" = frontend/ in the Railway service settings.
+# Kalvi Frontend — Nixpacks config
+# Railway: New Service → GitHub Repo → Akz06/Kalvi → Root Directory: frontend
 
 [phases.setup]
-nixPkgs = ["nodejs_20", "npm-9_x"]
+nixPkgs = ["nodejs_20"]
 
 [phases.install]
 cmds = ["npm ci"]
 
 [phases.build]
 cmds = ["npm run build"]
-
-[start]
-cmd = "npx serve -s dist -l ${PORT:-3000}"
