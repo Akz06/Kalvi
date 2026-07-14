@@ -1,0 +1,44 @@
+# Local/production-like orchestration for the School ERP stack.
+# Uses PostgreSQL in place of the dev SQLite file. To run with Postgres,
+# set the datasource provider to "postgresql" in prisma/schema.prisma.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp_password
+      POSTGRES_DB: school_erp
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U erp -d school_erp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://erp:erp_password@db:5432/school_erp?schema=public
+      JWT_SECRET: ${JWT_SECRET:-please-change-me-to-a-long-random-secret-32chars}
+      CLIENT_ORIGIN: http://localhost:8080
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  db_data:

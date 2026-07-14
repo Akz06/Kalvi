@@ -1,0 +1,444 @@
+// School ERP database schema — MULTI-TENANT
+// Dev: SQLite. For production, change provider to "postgresql".
+//
+// TENANCY MODEL: shared-database / shared-schema with row-level isolation.
+// Every tenant-owned record carries a `schoolId`. Isolation is enforced
+// centrally in the tenant middleware + query scoping (see src/lib/tenant.ts).
+//
+// NOTE: SQLite (Prisma) does not support native enums, so enum-like fields are
+// modelled as String with documented allowed values, validated at the API
+// layer via Zod (see src/schemas.ts). JSON-like config is stored as String.
+//
+//   Role:             SUPERADMIN | ADMIN | TEACHER | PARENT
+//   Gender:           MALE | FEMALE | OTHER
+//   AttendanceStatus: PRESENT | ABSENT | LATE | LEAVE
+//   FeeStatus:        PENDING | PARTIAL | PAID
+//   PaymentMode:      CASH | CARD | UPI | BANK | CHEQUE | OTHER
+//   Board:            CBSE | STATE | ICSE | IB | OTHER
+//
+// MONEY: all monetary amounts are stored as INTEGER MINOR UNITS (e.g. paise for
+// INR, cents for USD) to avoid floating-point rounding errors. The API layer
+// accepts/returns major units and converts at the boundary (see lib/money.ts).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// TENANT ROOT
+// ─────────────────────────────────────────────────────────────
+model School {
+  id        String   @id @default(cuid())
+  // URL-safe unique key used for onboarding / login scoping, e.g. "greenwood"
+  slug      String   @unique
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  settings             SchoolSettings?
+  paymentGatewayConfig PaymentGatewayConfig?
+  users                User[]
+  classes              Class[]
+  sections             Section[]
+  students             Student[]
+  staff                Staff[]
+  attendances          Attendance[]
+  fees                 FeeRecord[]
+  feeHeads             FeeHead[]
+  feeItems             FeeItem[]
+  feePayments          FeePayment[]
+  exams                Exam[]
+  examResults          ExamResult[]
+  academicYears        AcademicYear[]
+  enrollments          Enrollment[]
+  guardians            Guardian[]
+}
+
+// One row per school — all configurable preferences live here.
+model SchoolSettings {
+  id       String @id @default(cuid())
+  schoolId String @unique
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Identity / localisation (was hardcoded "Chennai / Classes 1–12")
+  city         String  @default("")
+  state        String  @default("")
+  country      String  @default("India")
+  addressLine  String  @default("")
+  phone        String  @default("")
+  email        String  @default("")
+  logoUrl      String  @default("")
+  // Public branding — shown on the public home/login pages per school
+  tagline      String  @default("")   // e.g. "Excellence in Education since 1998"
+  primaryColor String  @default("")   // optional hex, e.g. "#1d4ed8" for custom brand colour
+  currency     String  @default("INR") // ISO 4217, drives money formatting
+  locale       String  @default("en-IN")
+  timezone     String  @default("Asia/Kolkata")
+
+  // Academic configuration
+  board            String @default("CBSE") // CBSE | STATE | ICSE | IB | OTHER
+  academicYear     String @default("") // e.g. "2024-2025"
+  minClassLevel    Int    @default(1) // configurable class range
+  maxClassLevel    Int    @default(12)
+  sectionsPerClass Int    @default(2) // default sections auto-created (A, B, ...)
+  passPercentage   Int    @default(35)
+
+  // Feature flags (JSON string). Phase 2 modules are gated here.
+  // e.g. {"attendance":true,"fees":true,"exams":true,"parentPortal":false}
+  features String @default("{}")
+
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// USERS & ACADEMIC STRUCTURE
+// ─────────────────────────────────────────────────────────────
+model User {
+  id        String   @id @default(cuid())
+  schoolId  String?  // null only for SUPERADMIN (cross-tenant operator)
+  school    School?  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  password  String
+  role      String   @default("ADMIN") // SUPERADMIN | ADMIN | TEACHER | PARENT
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Email unique per school (same email may exist across schools)
+  @@unique([schoolId, email])
+}
+
+model Class {
+  id        String    @id @default(cuid())
+  schoolId  String
+  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  level     Int       // numeric level, unique within a school
+  name      String     // e.g. "Class 1"
+  createdAt DateTime  @default(now())
+  sections  Section[]
+  exams     Exam[]
+  feeHeads  FeeHead[]
+
+  @@unique([schoolId, level])
+  @@index([schoolId])
+}
+
+model Section {
+  id        String    @id @default(cuid())
+  schoolId  String
+  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name      String     // "A", "B", "C"
+  classId   String
+  class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacherId String?
+  teacher   Staff?    @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  students    Student[]
+  enrollments Enrollment[]
+  createdAt   DateTime  @default(now())
+
+  @@unique([classId, name])
+  @@index([schoolId])
+}
+
+model Student {
+  id            String       @id @default(cuid())
+  schoolId      String
+  school        School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  admissionNo   String
+  firstName     String
+  lastName      String
+  gender        String        // MALE | FEMALE | OTHER
+  dob           DateTime
+  guardianName  String
+  guardianPhone String
+  address       String?
+  sectionId     String
+  section       Section      @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  admissionDate DateTime     @default(now())
+  active        Boolean      @default(true)
+  attendances   Attendance[]
+  fees          FeeRecord[]
+  examResults   ExamResult[]
+  enrollments   Enrollment[]
+  guardians     Guardian[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@unique([schoolId, admissionNo])
+  @@index([schoolId])
+  @@index([sectionId])
+}
+
+model Staff {
+  id             String    @id @default(cuid())
+  schoolId       String
+  school         School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  employeeNo     String
+  firstName      String
+  lastName       String
+  gender         String     // MALE | FEMALE | OTHER
+  email          String
+  phone          String
+  designation    String     // e.g. "Teacher", "Principal"
+  subject        String?
+  joiningDate    DateTime  @default(now())
+  active         Boolean   @default(true)
+  sectionsMentor Section[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([schoolId, employeeNo])
+  @@unique([schoolId, email])
+  @@index([schoolId])
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date      DateTime
+  status    String   @default("PRESENT") // PRESENT | ABSENT | LATE | LEAVE
+  remark    String?
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, date])
+  @@index([schoolId])
+  @@index([date])
+}
+
+// Configurable master list of fee heads (categories) per CLASS, e.g.
+// "Tuition Fee" for Class 10 may differ from Class 1. Managed via the
+// Fee Configuration UI. Amounts stored in minor units (paise/cents).
+model FeeHead {
+  id            String    @id @default(cuid())
+  schoolId      String
+  school        School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classId       String
+  class         Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  name          String     // e.g. "Tuition Fee"
+  defaultAmount Int       @default(0) // suggested amount (minor units) pre-filled in subform
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  items         FeeItem[]
+
+  // Same head name may exist across classes with different amounts.
+  @@unique([classId, name])
+  @@index([schoolId])
+  @@index([classId])
+}
+
+model FeeRecord {
+  id             String        @id @default(cuid())
+  schoolId       String
+  school         School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  title          String        // e.g. "Term 1 Fees"
+  amount         Int           // total amount due in minor units (sum of line items)
+  amountPaid     Int           @default(0) // total paid in minor units (derived from payments)
+  status         String        @default("PENDING") // PENDING | PARTIAL | PAID
+  dueDate        DateTime
+  paidDate       DateTime?
+  items          FeeItem[]     // the subform line items: fee head + amount
+  payments       FeePayment[]  // immutable ledger of payments made
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([schoolId])
+  @@index([studentId])
+  @@index([academicYearId])
+  @@index([status])
+}
+
+// One line of a fee invoice's subform: a fee head and its amount.
+model FeeItem {
+  id          String    @id @default(cuid())
+  schoolId    String
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  feeRecordId String
+  feeRecord   FeeRecord @relation(fields: [feeRecordId], references: [id], onDelete: Cascade)
+  feeHeadId   String
+  feeHead     FeeHead   @relation(fields: [feeHeadId], references: [id], onDelete: Restrict)
+  amount      Int        // minor units
+  createdAt   DateTime  @default(now())
+
+  @@index([schoolId])
+  @@index([feeRecordId])
+}
+
+// Immutable payment ledger — one row per payment against an invoice. Enables
+// auditable receipts, refunds, and multi-mode payments without mutating history.
+model FeePayment {
+  id          String    @id @default(cuid())
+  schoolId    String
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  feeRecordId String
+  feeRecord   FeeRecord @relation(fields: [feeRecordId], references: [id], onDelete: Cascade)
+  amount      Int        // minor units, always > 0
+  mode        String    @default("CASH") // CASH | CARD | UPI | BANK | CHEQUE | OTHER
+  reference   String?    // txn id / cheque no
+  receiptNo   String    @unique
+  paidAt      DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([schoolId])
+  @@index([feeRecordId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PHASE 3 — ONLINE PAYMENTS CONFIGURATION
+// ─────────────────────────────────────────────────────────────
+
+// Per-school payment gateway configuration managed by the school admin.
+// Secret keys (webhookSecret, secretKey) are NEVER returned to the frontend.
+// Only the publishable/key-id is sent to the client for SDK initialisation.
+//
+// Provider values: RAZORPAY | STRIPE | PAYU | CASHFREE | MANUAL
+// mode:            TEST | LIVE
+// enabledModes:    JSON array, e.g. ["CASH","UPI","ONLINE"]  (subset of PaymentMode)
+model PaymentGatewayConfig {
+  id          String   @id @default(cuid())
+  schoolId    String   @unique
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  provider        String  @default("MANUAL")  // RAZORPAY | STRIPE | PAYU | CASHFREE | MANUAL
+  mode            String  @default("TEST")     // TEST | LIVE
+  keyId           String  @default("")         // Razorpay key_id / Stripe publishable key
+  keySecret       String  @default("")         // stored server-side only — never exposed
+  webhookSecret   String  @default("")         // for signature verification
+  // JSON array of enabled payment modes, e.g. ["CASH","UPI","ONLINE"]
+  enabledModes    String  @default("[\"CASH\",\"CARD\",\"UPI\",\"BANK\",\"CHEQUE\",\"ONLINE\"]")
+  active          Boolean @default(false)      // false until admin explicitly enables
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// PHASE 3 — PARENT PORTAL
+// ─────────────────────────────────────────────────────────────
+
+// A guardian (parent) who can log in and view their child's data.
+// Created by the school admin from the Students page. One student
+// may have up to 2 guardians (primary + secondary).
+model Guardian {
+  id           String   @id @default(cuid())
+  schoolId     String
+  school       School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  name         String
+  relationship String   @default("Parent") // e.g. Father, Mother, Guardian
+  phone        String
+  email        String
+  password     String   // bcrypt hash — separate credential from User
+  isPrimary    Boolean  @default(true)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([schoolId, email])
+  @@index([schoolId])
+  @@index([studentId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PHASE 3 — ACADEMIC YEAR, ENROLLMENT & PROMOTION
+// ─────────────────────────────────────────────────────────────
+
+// One row per academic session (e.g. "2024-2025"). Exactly one can be active
+// at a time per school. Exams, fees, and attendance are scoped to a year.
+model AcademicYear {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name      String                     // e.g. "2024-2025"
+  startDate DateTime
+  endDate   DateTime
+  active    Boolean  @default(false)   // only one active per school (enforced in service)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollments Enrollment[]
+  exams       Exam[]
+  fees        FeeRecord[]
+
+  @@unique([schoolId, name])
+  @@index([schoolId])
+}
+
+// Enrollment — the event of a student being placed in a section for a
+// specific academic year. Replaces the rigid Student.sectionId for history.
+// Student.sectionId is kept for current-section quick lookups.
+model Enrollment {
+  id             String       @id @default(cuid())
+  schoolId       String
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  sectionId      String
+  section        Section      @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  status         String       @default("ACTIVE")   // ACTIVE | PROMOTED | TRANSFERRED | LEFT
+  promotedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@unique([studentId, academicYearId])
+  @@index([schoolId])
+  @@index([academicYearId])
+  @@index([sectionId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PHASE 2 — EXAMS & REPORT CARDS
+// ─────────────────────────────────────────────────────────────
+model Exam {
+  id             String        @id @default(cuid())
+  schoolId       String
+  school         School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name           String        // e.g. "Term 1 Examination"
+  classId        String
+  class          Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  subject        String        // e.g. "Mathematics"
+  maxMarks       Float         @default(100)
+  examDate       DateTime
+  createdAt      DateTime      @default(now())
+  results        ExamResult[]
+
+  @@index([schoolId])
+  @@index([classId])
+  @@index([academicYearId])
+}
+
+model ExamResult {
+  id           String   @id @default(cuid())
+  schoolId     String
+  school       School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  examId       String
+  exam         Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  marksObtained Float
+  grade        String?  // computed A+/A/.../F
+  remark       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([examId, studentId])
+  @@index([schoolId])
+  @@index([studentId])
+}

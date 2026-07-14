@@ -1,0 +1,38 @@
+{
+  "name": "school-erp",
+  "version": "1.0.0",
+  "description": "Multi-tenant School ERP — configurable per school, built for any K-12 institution",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "test": "npm run test --workspace=backend",
+    "lint": "npm run lint --workspace=backend",
+    "typecheck": "npm run typecheck --workspace=backend",
+    "format": "npm run format --workspace=backend",
+    "db:push": "npm run db:push --workspace=backend",
+    "db:seed": "npm run db:seed --workspace=backend"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "school-erp",
+    "multi-tenant",
+    "education",
+    "saas",
+    "react",
+    "typescript",
+    "prisma",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT"
+}
