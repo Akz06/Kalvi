@@ -53,6 +53,7 @@ export const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? (isProd ? "15m" : "1d"),
   // Refresh token TTL in days
   REFRESH_TOKEN_EXPIRES_DAYS: Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS ?? 30),
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "",
 };
 
 export const isTest = env.NODE_ENV === "test";

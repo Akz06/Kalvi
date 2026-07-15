@@ -4,15 +4,14 @@
  */
 import axios from "axios";
 
-function buildBase(): string {
-  const raw = import.meta.env.VITE_API_URL as string | undefined;
-  if (!raw) return "/api";
-  const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-  return `${url}/api`;
-}
-const BASE = buildBase();
+const BASE =
+  import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api`
+    : "/api";
 
 export const publicApi = axios.create({ baseURL: BASE });
+// Re-export authenticated api for convenience in Signup page
+export { api } from "../api/client";
 
 export async function getSchoolBranding(slug: string) {
   try {

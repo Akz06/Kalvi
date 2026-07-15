@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { publicApi } from "../lib/publicApi";
+import { publicApi, api } from "../lib/publicApi";
 import { parseApiError, type ApiFieldIssue } from "../api/client";
 import { FormError } from "../components/ui";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 export default function Signup() {
   const { loginWithToken } = useAuth();
@@ -13,6 +14,27 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [issues, setIssues] = useState<ApiFieldIssue[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Google sign-in — same flow as Login (creates account if needed)
+  const handleGoogleToken = useCallback(async (idToken: string) => {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await api.post("/auth/google", { idToken });
+      if (res.data.requiresSchoolSelection) {
+        // Edge case: signed up via Google but email already has schools
+        // Redirect to login to pick school
+        navigate("/login", { replace: true });
+        return;
+      }
+      loginWithToken(res.data.token, res.data.user);
+      navigate(res.data.user.schoolId ? "/app" : "/create-school", { replace: true });
+    } catch (err) {
+      setError(parseApiError(err, "Google sign-in failed. Please try again.").message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   function set<K extends keyof typeof form>(k: K, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -51,6 +73,16 @@ export default function Signup() {
           <p className="text-sm text-slate-500">
             You'll set up your school in the next step
           </p>
+        </div>
+
+        {/* Google sign-up */}
+        <GoogleSignInButton onToken={handleGoogleToken} label="Sign up with Google" />
+
+        {/* Divider */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-px bg-slate-200" />
+          <span className="text-xs text-slate-400 font-medium">or sign up with email</span>
+          <div className="flex-1 h-px bg-slate-200" />
         </div>
 
         <form onSubmit={submit} className="space-y-4">

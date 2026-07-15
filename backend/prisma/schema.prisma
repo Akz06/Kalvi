@@ -159,6 +159,7 @@ model User {
   // Revoking all sessions: set tokenRevoked = true to invalidate all refresh tokens
   tokenRevoked Boolean @default(false)
   emailVerified Boolean @default(false)
+  googleId  String?  // Google sub — set on first Google sign-in
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -167,6 +168,7 @@ model User {
 
   @@unique([schoolId, email])
   @@index([email])
+  @@index([googleId])
 }
 
 // Rotating refresh token — one row per active device/session.

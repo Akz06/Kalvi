@@ -11,6 +11,7 @@ import {
   updateSettingsSchema,
 } from "./identity.schema.js";
 import * as service from "./identity.service.js";
+import { googleSignIn, googleSelectSchool } from "./google-auth.service.js";
 
 // ── Auth router: /api/auth ──────────────────────────────────
 export const authRouter = Router();
@@ -29,6 +30,30 @@ authRouter.post(
   validate({ body: loginSchema }),
   asyncHandler(async (req, res) => {
     res.json(await service.login(req.body));
+  })
+);
+
+// ── Google Sign-In ──────────────────────────────────────────
+// Receives Google id_token from the frontend, verifies with Google's
+// public keys, then finds-or-creates the user and returns a Kalvi JWT.
+authRouter.post(
+  "/google",
+  asyncHandler(async (req, res) => {
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ error: "idToken is required." });
+    res.json(await googleSignIn(idToken));
+  })
+);
+
+// Google school selector — called when user has multiple schools after Google sign-in.
+// Frontend sends the email (extracted from the Google response) + chosen schoolSlug.
+authRouter.post(
+  "/google/select-school",
+  asyncHandler(async (req, res) => {
+    const { email, schoolSlug } = req.body;
+    if (!email || !schoolSlug)
+      return res.status(400).json({ error: "email and schoolSlug are required." });
+    res.json(await googleSelectSchool(email, schoolSlug));
   })
 );
 
