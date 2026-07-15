@@ -29,9 +29,23 @@ export function createApp() {
   app.set("trust proxy", 1);
 
   app.use(helmet());
+  // Support multiple allowed origins (comma-separated in CLIENT_ORIGIN env var)
+  // e.g. CLIENT_ORIGIN="https://kalvi-frontend-production.up.railway.app,http://localhost:5173"
+  const allowedOrigins = env.CLIENT_ORIGIN
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+
   app.use(
     cors({
-      origin: env.CLIENT_ORIGIN,
+      origin: (origin, callback) => {
+        // Allow server-to-server requests (no origin) and whitelisted origins
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`CORS: origin ${origin} not allowed`));
+        }
+      },
       credentials: true,
     })
   );

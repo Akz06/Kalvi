@@ -33,7 +33,20 @@ export const env = {
   PORT: Number(process.env.PORT ?? 4000),
   NODE_ENV,
   isProd,
-  CLIENT_ORIGIN: process.env.CLIENT_ORIGIN ?? "http://localhost:5173",
+  // Normalise CLIENT_ORIGIN — always ensure https:// prefix for production origins.
+  // Each origin in the comma-separated list is checked and fixed individually.
+  CLIENT_ORIGIN: (process.env.CLIENT_ORIGIN ?? "http://localhost:5173")
+    .split(",")
+    .map((o) => {
+      const t = o.trim();
+      if (!t) return "";
+      // If it already has a protocol, leave it alone.
+      if (/^https?:\/\//i.test(t)) return t;
+      // In production assume https; in dev assume http.
+      return `${NODE_ENV === "production" ? "https" : "http"}://${t}`;
+    })
+    .filter(Boolean)
+    .join(","),
   DATABASE_URL: required("DATABASE_URL", "file:./dev.db"),
   JWT_SECRET,
   // Access token TTL — short in prod (15m), generous in dev (1d)
