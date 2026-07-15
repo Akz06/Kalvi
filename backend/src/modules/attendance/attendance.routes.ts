@@ -6,6 +6,8 @@ import { validate } from "../../middleware/validate.js";
 import { markAttendanceSchema } from "./attendance.schema.js";
 import * as service from "./attendance.service.js";
 
+type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "LEAVE";
+
 const router = Router();
 router.use(authenticate, resolveTenant);
 
@@ -24,7 +26,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const { date, records } = req.body as {
       date: Date;
-      records: { studentId: string; status: string; remark?: string }[];
+      records: { studentId: string; status: AttendanceStatus; remark?: string }[];
     };
     res.status(201).json(await service.markAttendance(tenantId(req), date, records));
   })

@@ -1,6 +1,8 @@
 import { prisma } from "../../shared/prisma.js";
 import { BadRequest, Forbidden } from "../../shared/errors.js";
 
+type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "LEAVE";
+
 /** Normalise a date to midnight UTC so one record exists per day. */
 function dayStart(d: Date): Date {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
@@ -30,7 +32,7 @@ export async function getAttendance(schoolId: string, sectionId?: string, date?:
 export async function markAttendance(
   schoolId: string,
   date: Date,
-  records: { studentId: string; status: string; remark?: string }[]
+  records: { studentId: string; status: AttendanceStatus; remark?: string }[]
 ) {
   const day = dayStart(new Date(date));
   const ids = records.map((r) => r.studentId);

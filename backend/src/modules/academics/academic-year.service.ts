@@ -13,6 +13,15 @@
 import { prisma } from "../../shared/prisma.js";
 import { BadRequest, NotFound, Conflict } from "../../shared/errors.js";
 
+type EnrollmentStatus = "ACTIVE" | "PROMOTED" | "TRANSFERRED" | "LEFT" | "COMPLETED";
+const ES = {
+  ACTIVE: "ACTIVE" as EnrollmentStatus,
+  PROMOTED: "PROMOTED" as EnrollmentStatus,
+  TRANSFERRED: "TRANSFERRED" as EnrollmentStatus,
+  LEFT: "LEFT" as EnrollmentStatus,
+  COMPLETED: "COMPLETED" as EnrollmentStatus,
+};
+
 // ── Academic Years ───────────────────────────────────────────
 
 export async function listAcademicYears(schoolId: string) {
@@ -121,7 +130,9 @@ export async function listEnrollments(
       schoolId,
       ...(filter.academicYearId ? { academicYearId: filter.academicYearId } : {}),
       ...(filter.sectionId ? { sectionId: filter.sectionId } : {}),
-      ...(filter.status ? { status: filter.status } : { status: "ACTIVE" }),
+      ...(filter.status
+        ? { status: filter.status as EnrollmentStatus }
+        : { status: ES.ACTIVE }),
     },
     include: {
       student: {
@@ -162,7 +173,7 @@ export async function enrollStudent(
 
   const [enrollment] = await prisma.$transaction([
     prisma.enrollment.create({
-      data: { schoolId, studentId, sectionId, academicYearId, status: "ACTIVE" },
+      data: { schoolId, studentId, sectionId, academicYearId, status: ES.ACTIVE },
       include: {
         student: true,
         section: { include: { class: true } },
@@ -203,7 +214,7 @@ export async function bulkEnroll(
             studentId: e.studentId,
             sectionId: e.sectionId,
             academicYearId: body.academicYearId,
-            status: "ACTIVE",
+            status: ES.ACTIVE,
           },
         }),
         prisma.student.update({ where: { id: e.studentId }, data: { sectionId: e.sectionId } }),
@@ -276,7 +287,7 @@ export async function promoteStudents(
         // Seal the old enrollment
         prisma.enrollment.update({
           where: { id: oldEnrollment.id },
-          data: { status: p.action, promotedAt: new Date() },
+          data: { status: p.action as EnrollmentStatus, promotedAt: new Date() },
         }),
         // Create new enrollment (skip for LEFT students)
         ...(p.action !== ("LEFT" as string)
@@ -287,7 +298,7 @@ export async function promoteStudents(
                   studentId: p.studentId,
                   sectionId: p.toSectionId,
                   academicYearId: toYearId,
-                  status: "ACTIVE",
+                  status: ES.ACTIVE,
                 },
               }),
               prisma.student.update({

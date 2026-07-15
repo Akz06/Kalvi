@@ -2,6 +2,8 @@ import { prisma } from "../../shared/prisma.js";
 import { BadRequest, Conflict, NotFound } from "../../shared/errors.js";
 import { toMinor, moneyToMajor, MONEY_FIELDS } from "../../shared/money.js";
 
+type PaymentMode = "CASH" | "CARD" | "UPI" | "BANK" | "CHEQUE" | "ONLINE" | "OTHER";
+
 /** Present a fee entity to the client with money fields in major units. */
 export function present<T extends Record<string, any>>(obj: T): T {
   return moneyToMajor(obj, MONEY_FIELDS);
@@ -192,7 +194,7 @@ export async function payFee(
         schoolId,
         feeRecordId: fee.id,
         amount: payMinor,
-        mode: body.mode ?? "CASH",
+        mode: (body.mode ?? "CASH") as PaymentMode,
         reference: body.reference,
         receiptNo,
       },
