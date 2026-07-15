@@ -77,7 +77,7 @@ const FAQ = [
     a: "Yes. The School plan comes with a 14-day free trial — no credit card required. You can register and explore all features immediately.",
   },
   {
-          "Can multiple schools or branches use the same platform?",
+    q: "Can multiple schools or branches use the same platform?",
     a: "Yes. Kalvi supports multiple schools. Each school or branch gets its own completely isolated environment — separate students, fees, staff, and configuration.",
   },
   {
