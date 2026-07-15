@@ -8,6 +8,214 @@ import { BadRequest, Conflict, Unauthorized } from "../../shared/errors.js";
 const BAD_CREDENTIALS =
   "We couldn't find an account with those details. Check your school code, email, and password.";
 
+// ─────────────────────────────────────────────────────────────
+// SIGNUP — user account only, no school yet
+// ─────────────────────────────────────────────────────────────
+export async function signup(input: {
+  name: string;
+  email: string;
+  password: string;
+}) {
+  const email = input.email.toLowerCase().trim();
+
+  // Global email uniqueness — one account per email address
+  const existing = await prisma.user.findFirst({ where: { email } });
+  if (existing)
+    throw Conflict(
+      "An account with this email already exists. Please log in instead."
+    );
+
+  // Password complexity (same as registerSchool)
+  const pw = input.password;
+  if (!/[A-Z]/.test(pw) || !/[a-z]/.test(pw) || !/\d/.test(pw)) {
+    throw BadRequest(
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+    );
+  }
+
+  const hashed = await bcrypt.hash(input.password, 12);
+  const user = await prisma.user.create({
+    data: {
+      name: input.name.trim(),
+      email,
+      password: hashed,
+      role: "ADMIN",
+      schoolId: null, // no school yet — assigned after CreateSchool flow
+    },
+  });
+
+  const token = signToken({
+    sub: user.id,
+    role: user.role,
+    email: user.email,
+    schoolId: null,
+  });
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      schoolId: null,
+      school: null,
+      schools: [],
+    },
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// CREATE SCHOOL for an already-authenticated user
+// ─────────────────────────────────────────────────────────────
+export async function createSchoolForUser(
+  userId: string,
+  input: {
+    name: string;
+    slug: string;
+    city?: string;
+    state?: string;
+    board?: string;
+    minClassLevel?: number;
+    maxClassLevel?: number;
+    sectionsPerClass?: number;
+  }
+) {
+  // Slug uniqueness
+  const existing = await prisma.school.findUnique({ where: { slug: input.slug } });
+  if (existing)
+    throw Conflict("That school code is already taken. Please choose a different code.");
+
+  const hashed = await bcrypt.hash(await generateTempPassword(), 12); // not used — user already has their own password
+  // We need the user's actual password hash to create them in the new school
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw BadRequest("User not found.");
+
+  // Create the school and add user as admin
+  const school = await prisma.school.create({
+    data: {
+      name: input.name,
+      slug: input.slug,
+      settings: {
+        create: {
+          city: input.city ?? "",
+          state: input.state ?? "",
+          board: input.board ?? "CBSE",
+          minClassLevel: input.minClassLevel ?? 1,
+          maxClassLevel: input.maxClassLevel ?? 12,
+          sectionsPerClass: input.sectionsPerClass ?? 2,
+          features: JSON.stringify(DEFAULT_FEATURES),
+        },
+      },
+      users: {
+        create: {
+          name: user.name,
+          email: user.email,
+          password: user.password, // reuse existing password hash
+          role: "ADMIN",
+        },
+      },
+    },
+    include: { users: { where: { email: user.email } } },
+  });
+
+  await provisionClasses(school.id);
+
+  // If user has no school yet, update their primary record
+  if (!user.schoolId) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { schoolId: school.id },
+    });
+  }
+
+  // Issue a new token scoped to the new school
+  const newUser = school.users[0];
+  const token = signToken({
+    sub: newUser.id,
+    role: newUser.role,
+    email: newUser.email,
+    schoolId: school.id,
+  });
+
+  return {
+    token,
+    school: { id: school.id, slug: school.slug, name: school.name },
+    message: "School created successfully.",
+  };
+}
+
+async function generateTempPassword() {
+  const { randomBytes } = await import("crypto");
+  return randomBytes(16).toString("hex");
+}
+
+// ─────────────────────────────────────────────────────────────
+// SWITCH SCHOOL — re-issue token for a different school context
+// ─────────────────────────────────────────────────────────────
+export async function switchSchool(userId: string, schoolSlug: string) {
+  const school = await prisma.school.findUnique({
+    where: { slug: schoolSlug },
+    include: { users: { where: { email: { not: undefined } } } },
+  });
+  if (!school || !school.active)
+    throw BadRequest("School not found.");
+
+  // Verify the user belongs to that school
+  const schoolUser = await prisma.user.findFirst({
+    where: {
+      id: userId,
+      school: { slug: schoolSlug },
+    },
+  });
+  // Also allow if user's email matches any user in that school
+  const currentUser = await prisma.user.findUnique({ where: { id: userId } });
+  const memberUser = await prisma.user.findFirst({
+    where: { email: currentUser?.email ?? "", schoolId: school.id },
+  });
+
+  if (!schoolUser && !memberUser)
+    throw Unauthorized("You do not have access to that school.");
+
+  const targetUser = schoolUser ?? memberUser!;
+  const token = signToken({
+    sub: targetUser.id,
+    role: targetUser.role,
+    email: targetUser.email,
+    schoolId: school.id,
+  });
+
+  return {
+    token,
+    user: {
+      id: targetUser.id,
+      name: targetUser.name,
+      email: targetUser.email,
+      role: targetUser.role,
+      schoolId: school.id,
+      school: { slug: school.slug, name: school.name },
+    },
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// LIST USER'S SCHOOLS
+// ─────────────────────────────────────────────────────────────
+export async function getUserSchools(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) return [];
+
+  const users = await prisma.user.findMany({
+    where: { email: user.email },
+    include: { school: { select: { id: true, slug: true, name: true } } },
+  });
+
+  return users
+    .filter((u) => u.school !== null)
+    .map((u) => u.school!)
+    .filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i);
+}
+
 export async function login(input: {
   email: string;
   password: string;
@@ -81,7 +289,18 @@ export async function currentUser(userId: string) {
     },
   });
   if (!user) throw Unauthorized();
-  return user;
+
+  // Fetch all schools this email belongs to
+  const allUsers = await prisma.user.findMany({
+    where: { email: user.email },
+    include: { school: { select: { id: true, slug: true, name: true } } },
+  });
+  const schools = allUsers
+    .filter((u) => u.school !== null)
+    .map((u) => u.school!)
+    .filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i);
+
+  return { ...user, schools };
 }
 
 export async function registerSchool(input: {

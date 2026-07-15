@@ -126,9 +126,15 @@ export default function Layout() {
         <div className="p-3 border-t border-brand-700 text-sm flex-shrink-0">
           <p className="font-medium truncate">{user?.name}</p>
           <p className="text-xs text-brand-200 truncate">{user?.email}</p>
+          <a
+            href="/create-school"
+            className="mt-2 block w-full rounded-md bg-brand-600 py-1.5 text-sm text-center hover:bg-brand-500"
+          >
+            + Add School
+          </a>
           <button
             onClick={logout}
-            className="mt-3 w-full rounded-md bg-brand-700 py-2 text-sm hover:bg-brand-600"
+            className="mt-2 w-full rounded-md bg-brand-700 py-2 text-sm hover:bg-brand-600"
           >
             Logout
           </button>

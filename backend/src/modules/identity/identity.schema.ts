@@ -4,6 +4,37 @@ const board = z.enum(["CBSE", "STATE", "ICSE", "IB", "OTHER"], {
   errorMap: () => ({ message: "Board must be one of CBSE, STATE, ICSE, IB, or OTHER." }),
 });
 
+export const signupSchema = z.object({
+  name: z.string().trim().min(2, "Name must be at least 2 characters."),
+  email: z.string().trim().toLowerCase().email("Please enter a valid email address."),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters.")
+    .max(128)
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+    ),
+});
+
+export const createSchoolSchema = z.object({
+  name: z.string().min(2, "School name must be at least 2 characters."),
+  slug: z
+    .string()
+    .min(2, "School code must be at least 2 characters.")
+    .max(40, "School code must be at most 40 characters.")
+    .regex(/^[a-z0-9-]+$/, "School code may only contain lowercase letters, numbers, and hyphens."),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  board: z.enum(["CBSE", "STATE", "ICSE", "IB", "OTHER"]).optional(),
+  minClassLevel: z.number().int().min(0).max(20).optional(),
+  maxClassLevel: z.number().int().min(1).max(20).optional(),
+  sectionsPerClass: z.number().int().min(1).max(10).optional(),
+}).refine(
+  (s) => s.minClassLevel === undefined || s.maxClassLevel === undefined || s.minClassLevel <= s.maxClassLevel,
+  { message: "Lowest class level cannot be greater than highest.", path: ["minClassLevel"] }
+);
+
 export const loginSchema = z.object({
   schoolSlug: z.string().trim().min(1, "School code cannot be empty.").optional(),
   email: z.string().trim().toLowerCase().email("Please enter a valid email address."),

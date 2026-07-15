@@ -15,6 +15,8 @@ import HelpPage from "./pages/public/HelpPage";
 // Auth pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Signup from "./pages/Signup";
+import CreateSchool from "./pages/CreateSchool";
 
 // Admin pages
 import Dashboard from "./pages/Dashboard";
@@ -45,6 +47,15 @@ function Protected({ children }: { children: JSX.Element }) {
   return children;
 }
 
+// ── School guard — redirect to create-school if no school yet ─
+function SchoolRequired({ children }: { children: JSX.Element }) {
+  const { user, loading } = useAuth();
+  if (loading) return <Spinner />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!user.schoolId) return <Navigate to="/create-school" replace />;
+  return children;
+}
+
 // ── Parent guard ─────────────────────────────────────────────
 function ParentProtected({ children }: { children: JSX.Element }) {
   const { guardian, loading } = useParentAuth();
@@ -65,18 +76,26 @@ export default function App() {
 
         {/* ── Auth ────────────────────────────────────────── */}
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/create-school" element={
+          <Protected>
+            <ConfigProvider>
+              <CreateSchool />
+            </ConfigProvider>
+          </Protected>
+        } />
         <Route path="/parent/login" element={<ParentLogin />} />
 
         {/* ── Admin / Teacher routes ───────────────────────── */}
         <Route
           path="/app"
           element={
-            <Protected>
+            <SchoolRequired>
               <ConfigProvider>
                 <Layout />
               </ConfigProvider>
-            </Protected>
+            </SchoolRequired>
           }
         >
           <Route index element={<Dashboard />} />

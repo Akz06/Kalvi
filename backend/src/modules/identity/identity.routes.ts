@@ -5,6 +5,8 @@ import { authenticate, authorize } from "../../middleware/auth.js";
 import { resolveTenant, tenantId } from "../../shared/tenant.js";
 import {
   loginSchema,
+  signupSchema,
+  createSchoolSchema,
   registerSchoolSchema,
   updateSettingsSchema,
 } from "./identity.schema.js";
@@ -12,6 +14,15 @@ import * as service from "./identity.service.js";
 
 // ── Auth router: /api/auth ──────────────────────────────────
 export const authRouter = Router();
+
+// Public: sign up (user account only — no school)
+authRouter.post(
+  "/signup",
+  validate({ body: signupSchema }),
+  asyncHandler(async (req, res) => {
+    res.status(201).json(await service.signup(req.body));
+  })
+);
 
 authRouter.post(
   "/login",
@@ -26,6 +37,26 @@ authRouter.get(
   authenticate,
   asyncHandler(async (req, res) => {
     res.json({ user: await service.currentUser(req.user!.sub) });
+  })
+);
+
+// Authenticated: switch active school context
+authRouter.post(
+  "/switch-school",
+  authenticate,
+  asyncHandler(async (req, res) => {
+    const { schoolSlug } = req.body;
+    if (!schoolSlug) return res.status(400).json({ error: "schoolSlug is required." });
+    res.json(await service.switchSchool(req.user!.sub, schoolSlug));
+  })
+);
+
+// Authenticated: list all schools the current user belongs to
+authRouter.get(
+  "/my-schools",
+  authenticate,
+  asyncHandler(async (req, res) => {
+    res.json({ schools: await service.getUserSchools(req.user!.sub) });
   })
 );
 
@@ -48,6 +79,16 @@ schoolRouter.post(
   validate({ body: registerSchoolSchema }),
   asyncHandler(async (req, res) => {
     res.status(201).json(await service.registerSchool(req.body));
+  })
+);
+
+// Authenticated: create a new school for the logged-in user
+schoolRouter.post(
+  "/",
+  authenticate,
+  validate({ body: createSchoolSchema }),
+  asyncHandler(async (req, res) => {
+    res.status(201).json(await service.createSchoolForUser(req.user!.sub, req.body));
   })
 );
 

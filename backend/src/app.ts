@@ -123,9 +123,13 @@ export function createApp() {
 
   // ── Routes ────────────────────────────────────────────────────────────────
   app.use("/api/auth", authSlowDown, authLimiter, authRouter);
-  // Registration: extra-tight limiter (5/hour) + auth limiter (20/15min)
+  // Legacy combined-register endpoint: extra-tight limiter (5/hour)
   app.post("/api/schools/register", registerLimiter, authLimiter, (req, res, next) => {
     req.url = "/register";
+    schoolRouter(req, res, next);
+  });
+  // New: create school for authenticated user — also rate limited
+  app.post("/api/schools", registerLimiter, (req, res, next) => {
     schoolRouter(req, res, next);
   });
   app.use("/api/schools", authLimiter, schoolRouter);

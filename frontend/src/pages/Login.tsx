@@ -78,9 +78,9 @@ export default function Login() {
         </form>
         <div className="mt-5 text-center text-xs text-slate-400 space-y-2">
           <p>
-            New school?{" "}
-            <Link to="/register" className="text-brand-600 font-medium hover:underline">
-              Register your school →
+            New to Kalvi?{" "}
+            <Link to="/signup" className="text-brand-600 font-medium hover:underline">
+              Create an account →
             </Link>
           </p>
           <p>
