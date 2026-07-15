@@ -1,121 +1,199 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { parseApiError } from "../api/client";
+import { api, parseApiError } from "../api/client";
 import { FormError } from "../components/ui";
 
+interface SchoolOption {
+  id: string;
+  slug: string;
+  name: string;
+}
+
+type Step = "credentials" | "pick-school";
+
 export default function Login() {
-  const { login } = useAuth();
+  const { loginWithToken } = useAuth();
   const navigate = useNavigate();
 
+  const [step, setStep] = useState<Step>("credentials");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [schoolSlug, setSchoolSlug] = useState("");
-  const [showSchoolCode, setShowSchoolCode] = useState(false);
+  const [schools, setSchools] = useState<SchoolOption[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [switchingSlug, setSwitchingSlug] = useState<string | null>(null);
 
-  async function submit(e: React.FormEvent) {
+  // ── Step 1: email + password ─────────────────────────────
+  async function submitCredentials(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await login(email, password, schoolSlug.trim() || undefined);
-      navigate("/app", { replace: true });
-    } catch (err) {
-      const msg = parseApiError(err, "Unable to sign in. Please try again.").message;
-      // If the backend says "registered with more than one school", show school code field
-      if (msg.includes("more than one school")) {
-        setShowSchoolCode(true);
-        setError("You have multiple schools. Please enter your school code to continue.");
-      } else {
-        setError(msg);
+      const res = await api.post("/auth/login", { email, password });
+
+      // Multiple schools — show picker
+      if (res.data.requiresSchoolSelection) {
+        setSchools(res.data.schools);
+        setStep("pick-school");
+        return;
       }
+
+      // Single school or no school — log in directly
+      loginWithToken(res.data.token, res.data.user);
+      navigate(res.data.user.schoolId ? "/app" : "/create-school", { replace: true });
+    } catch (err) {
+      setError(parseApiError(err, "Unable to sign in. Please try again.").message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  // ── Step 2: pick school ──────────────────────────────────
+  async function selectSchool(slug: string) {
+    setSwitchingSlug(slug);
+    setError("");
+    try {
+      const res = await api.post("/auth/login", { email, password, schoolSlug: slug });
+      loginWithToken(res.data.token, res.data.user);
+      navigate("/app", { replace: true });
+    } catch (err) {
+      setError(parseApiError(err, "Could not switch to that school.").message);
+    } finally {
+      setSwitchingSlug(null);
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-brand-900 p-4">
       <div className="w-full max-w-md">
+
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-600 mb-4">
-            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
               <path d="M2 17l10 5 10-5" />
               <path d="M2 12l10 5 10-5" />
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-white">Welcome to Kalvi</h1>
-          <p className="text-slate-400 text-sm mt-1">Sign in to your school account</p>
+          <p className="text-slate-400 text-sm mt-1">
+            {step === "credentials" ? "Sign in to your account" : "Choose a school to continue"}
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          <form onSubmit={submit} className="space-y-5">
-            <div>
-              <label className="label">Email Address</label>
-              <input
-                className="input"
-                type="email"
-                placeholder="admin@yourschool.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoFocus
-              />
-            </div>
 
-            <div>
-              <label className="label">Password</label>
-              <input
-                className="input"
-                type="password"
-                placeholder="Your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* School code — only shown when user has multiple schools */}
-            {showSchoolCode && (
-              <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
-                <p className="text-xs font-medium text-amber-800 mb-2">
-                  Multiple schools found for this email. Enter your school code to continue.
-                </p>
-                <label className="label">School Code</label>
+          {/* ── STEP 1: Credentials ── */}
+          {step === "credentials" && (
+            <form onSubmit={submitCredentials} className="space-y-5">
+              <div>
+                <label className="label">Email Address</label>
                 <input
                   className="input"
-                  placeholder="e.g. springdale-high"
-                  value={schoolSlug}
-                  onChange={(e) => setSchoolSlug(e.target.value)}
+                  type="email"
+                  placeholder="admin@yourschool.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                   autoFocus
                 />
               </div>
-            )}
 
-            <FormError message={error} />
+              <div>
+                <label className="label">Password</label>
+                <input
+                  className="input"
+                  type="password"
+                  placeholder="Your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
 
-            <button className="btn-primary w-full py-2.5" disabled={loading}>
-              {loading ? "Signing in…" : "Sign In →"}
-            </button>
-          </form>
+              <FormError message={error} />
 
-          <div className="mt-6 pt-5 border-t border-slate-100 text-center space-y-2 text-sm">
-            <p className="text-slate-500">
-              New to Kalvi?{" "}
-              <Link to="/signup" className="text-brand-600 font-semibold hover:underline">
-                Create an account →
-              </Link>
-            </p>
-            <p>
-              <Link to="/" className="text-slate-400 hover:text-slate-600 text-xs transition">
-                ← Back to home
-              </Link>
-            </p>
-          </div>
+              <button className="btn-primary w-full py-2.5" disabled={loading}>
+                {loading ? "Signing in…" : "Sign In →"}
+              </button>
+            </form>
+          )}
+
+          {/* ── STEP 2: School Picker ── */}
+          {step === "pick-school" && (
+            <div className="space-y-4">
+              <p className="text-sm text-slate-500 text-center mb-2">
+                Your account is linked to <strong>{schools.length} schools</strong>. Pick one to open.
+              </p>
+
+              <div className="space-y-2">
+                {schools.map((s) => (
+                  <button
+                    key={s.slug}
+                    onClick={() => selectSchool(s.slug)}
+                    disabled={switchingSlug !== null}
+                    className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl border-2 border-slate-100 hover:border-brand-500 hover:bg-brand-50 transition-all group disabled:opacity-60"
+                  >
+                    <div className="flex items-center gap-3 text-left">
+                      {/* School icon */}
+                      <div className="w-9 h-9 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-brand-600" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 10v4m0 3v4M12 10v4m0 3v4M16 10v4m0 3v4" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800 text-sm">{s.name}</p>
+                        <p className="text-xs text-slate-400">{s.slug}</p>
+                      </div>
+                    </div>
+
+                    {switchingSlug === s.slug ? (
+                      <svg className="w-4 h-4 text-brand-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-slate-300 group-hover:text-brand-500 transition" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <FormError message={error} />
+
+              <button
+                type="button"
+                onClick={() => { setStep("credentials"); setError(""); }}
+                className="w-full text-sm text-slate-400 hover:text-slate-600 pt-2 transition"
+              >
+                ← Use a different account
+              </button>
+            </div>
+          )}
+
+          {/* Footer links — only on credentials step */}
+          {step === "credentials" && (
+            <div className="mt-6 pt-5 border-t border-slate-100 text-center space-y-2 text-sm">
+              <p className="text-slate-500">
+                New to Kalvi?{" "}
+                <Link to="/signup" className="text-brand-600 font-semibold hover:underline">
+                  Create an account →
+                </Link>
+              </p>
+              <p>
+                <Link to="/" className="text-slate-400 hover:text-slate-600 text-xs transition">
+                  ← Back to home
+                </Link>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -242,10 +242,18 @@ export async function login(input: {
   });
 
   if (users.length === 0) throw Unauthorized(BAD_CREDENTIALS);
-  if (users.length > 1)
-    throw BadRequest(
-      "This email is registered with more than one school. Please enter your school code to continue."
-    );
+
+  // Multiple schools — return them so the client can show a picker
+  if (users.length > 1) {
+    return {
+      requiresSchoolSelection: true,
+      schools: users.map((u) => ({
+        id: u.schoolId,
+        slug: u.school?.slug ?? "",
+        name: u.school?.name ?? "",
+      })),
+    } as any;
+  }
 
   const user = users[0];
   if (!user.active)

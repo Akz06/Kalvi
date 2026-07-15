@@ -67,8 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       ...(schoolSlug ? { schoolSlug } : {}),
     });
+    // If backend requires school selection, bubble up the raw response — caller handles it
+    if (res.data.requiresSchoolSelection) return res.data;
     localStorage.setItem("token", res.data.token);
     setUser(res.data.user);
+    return res.data;
   }
 
   function loginWithToken(token: string, userData: User) {
