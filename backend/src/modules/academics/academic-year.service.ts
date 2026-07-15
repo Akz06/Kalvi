@@ -13,10 +13,13 @@
 import { prisma } from "../../shared/prisma.js";
 import { BadRequest, NotFound, Conflict } from "../../shared/errors.js";
 
-// Enrollment status constants — plain strings that work with both the SQLite
-// test client and the PostgreSQL production client. Cast to `any` at the
-// Prisma boundary so the local SQLite client (no native enums) doesn't reject
-// them, while Railway's PostgreSQL client accepts the same string values.
+// ── Enum bridge ─────────────────────────────────────────────────────────────
+// Plain string constants work with both:
+//   • SQLite test client  (no native enum exports)
+//   • PostgreSQL prod client (strict native enum types on Railway)
+// We cast at every Prisma boundary with asEnum<T>() to satisfy the
+// PostgreSQL Prisma types without importing from @prisma/client
+// (which is absent / incompatible in the SQLite test environment).
 const ES = {
   ACTIVE:      "ACTIVE",
   PROMOTED:    "PROMOTED",
@@ -24,9 +27,10 @@ const ES = {
   LEFT:        "LEFT",
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type EnrollmentStatus = (typeof ES)[keyof typeof ES];
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const asEnum = <T>(v: string): T => v as any;
+const asEnum = <T>(v: unknown): T => v as T;
 
 // ── Academic Years ───────────────────────────────────────────
 
