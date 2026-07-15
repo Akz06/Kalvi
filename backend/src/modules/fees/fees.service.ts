@@ -2,7 +2,8 @@ import { prisma } from "../../shared/prisma.js";
 import { BadRequest, Conflict, NotFound } from "../../shared/errors.js";
 import { toMinor, moneyToMajor, MONEY_FIELDS } from "../../shared/money.js";
 
-type PaymentMode = "CASH" | "CARD" | "UPI" | "BANK" | "CHEQUE" | "ONLINE" | "OTHER";
+const PAYMENT_MODE_VALUES = ["CASH","CARD","UPI","BANK","CHEQUE","ONLINE","OTHER"] as const;
+type PaymentMode = (typeof PAYMENT_MODE_VALUES)[number];
 
 /** Present a fee entity to the client with money fields in major units. */
 export function present<T extends Record<string, any>>(obj: T): T {

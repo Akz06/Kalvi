@@ -1,7 +1,8 @@
 import { prisma } from "../../shared/prisma.js";
 import { BadRequest, Forbidden } from "../../shared/errors.js";
 
-type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "LEAVE";
+const ATTENDANCE_STATUS_VALUES = ["PRESENT","ABSENT","LATE","LEAVE"] as const;
+type AttendanceStatus = (typeof ATTENDANCE_STATUS_VALUES)[number];
 
 /** Normalise a date to midnight UTC so one record exists per day. */
 function dayStart(d: Date): Date {

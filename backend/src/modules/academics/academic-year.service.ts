@@ -13,14 +13,13 @@
 import { prisma } from "../../shared/prisma.js";
 import { BadRequest, NotFound, Conflict } from "../../shared/errors.js";
 
-type EnrollmentStatus = "ACTIVE" | "PROMOTED" | "TRANSFERRED" | "LEFT" | "COMPLETED";
 const ES = {
-  ACTIVE: "ACTIVE" as EnrollmentStatus,
-  PROMOTED: "PROMOTED" as EnrollmentStatus,
-  TRANSFERRED: "TRANSFERRED" as EnrollmentStatus,
-  LEFT: "LEFT" as EnrollmentStatus,
-  COMPLETED: "COMPLETED" as EnrollmentStatus,
-};
+  ACTIVE:      "ACTIVE",
+  PROMOTED:    "PROMOTED",
+  TRANSFERRED: "TRANSFERRED",
+  LEFT:        "LEFT",
+} as const;
+type EnrollmentStatus = (typeof ES)[keyof typeof ES];
 
 // ── Academic Years ───────────────────────────────────────────
 
@@ -290,7 +289,7 @@ export async function promoteStudents(
           data: { status: p.action as EnrollmentStatus, promotedAt: new Date() },
         }),
         // Create new enrollment (skip for LEFT students)
-        ...(p.action !== ("LEFT" as string)
+        ...(p.action !== "LEFT"
           ? [
               prisma.enrollment.create({
                 data: {
