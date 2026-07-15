@@ -5,7 +5,6 @@ import { resolveTenant, tenantId } from "../../shared/tenant.js";
 import { validate } from "../../middleware/validate.js";
 import { markAttendanceSchema } from "./attendance.schema.js";
 import * as service from "./attendance.service.js";
-
 type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "LEAVE";
 
 const router = Router();

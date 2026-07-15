@@ -2,8 +2,9 @@ import { prisma } from "../../shared/prisma.js";
 import { BadRequest, Conflict, NotFound } from "../../shared/errors.js";
 import { toMinor, moneyToMajor, MONEY_FIELDS } from "../../shared/money.js";
 
-const PAYMENT_MODE_VALUES = ["CASH","CARD","UPI","BANK","CHEQUE","ONLINE","OTHER"] as const;
-type PaymentMode = (typeof PAYMENT_MODE_VALUES)[number];
+type PaymentMode = "CASH" | "CARD" | "UPI" | "BANK" | "CHEQUE" | "ONLINE" | "OTHER";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const asEnum = <T>(v: string): T => v as any;
 
 /** Present a fee entity to the client with money fields in major units. */
 export function present<T extends Record<string, any>>(obj: T): T {
@@ -195,7 +196,7 @@ export async function payFee(
         schoolId,
         feeRecordId: fee.id,
         amount: payMinor,
-        mode: (body.mode ?? "CASH") as PaymentMode,
+        mode: asEnum<PaymentMode>(body.mode ?? "CASH"),
         reference: body.reference,
         receiptNo,
       },

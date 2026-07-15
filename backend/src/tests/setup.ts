@@ -21,6 +21,19 @@ export function prepareTestDb() {
   // Tests always use the SQLite schema (schema.test.prisma) to run without
   // needing a PostgreSQL server. The production schema (schema.prisma) uses
   // PostgreSQL with native enums — SQLite doesn't support those.
+  //
+  // Step 1: regenerate the Prisma client from the SQLite test schema so that
+  // @prisma/client uses sqlite (not the production postgresql client).
+  execSync(
+    "npx prisma generate --schema=prisma/schema.test.prisma",
+    {
+      cwd: path.resolve(__dirname, "../.."),
+      stdio: "ignore",
+      env: { ...process.env },
+    }
+  );
+
+  // Step 2: push the SQLite schema to the test database.
   execSync(
     "npx prisma db push --schema=prisma/schema.test.prisma --skip-generate --accept-data-loss --force-reset",
     {

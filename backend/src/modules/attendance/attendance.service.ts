@@ -1,8 +1,9 @@
 import { prisma } from "../../shared/prisma.js";
 import { BadRequest, Forbidden } from "../../shared/errors.js";
 
-const ATTENDANCE_STATUS_VALUES = ["PRESENT","ABSENT","LATE","LEAVE"] as const;
-type AttendanceStatus = (typeof ATTENDANCE_STATUS_VALUES)[number];
+type AttendanceStatus = "PRESENT" | "ABSENT" | "LATE" | "LEAVE";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const asEnum = <T>(v: string): T => v as any;
 
 /** Normalise a date to midnight UTC so one record exists per day. */
 function dayStart(d: Date): Date {
@@ -47,12 +48,12 @@ export async function markAttendance(
     records.map((r) =>
       prisma.attendance.upsert({
         where: { studentId_date: { studentId: r.studentId, date: day } },
-        update: { status: r.status, remark: r.remark },
+        update: { status: asEnum(r.status), remark: r.remark },
         create: {
           schoolId,
           studentId: r.studentId,
           date: day,
-          status: r.status,
+          status: asEnum(r.status),
           remark: r.remark,
         },
       })

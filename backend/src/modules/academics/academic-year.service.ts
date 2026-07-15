@@ -13,13 +13,20 @@
 import { prisma } from "../../shared/prisma.js";
 import { BadRequest, NotFound, Conflict } from "../../shared/errors.js";
 
+// Enrollment status constants — plain strings that work with both the SQLite
+// test client and the PostgreSQL production client. Cast to `any` at the
+// Prisma boundary so the local SQLite client (no native enums) doesn't reject
+// them, while Railway's PostgreSQL client accepts the same string values.
 const ES = {
   ACTIVE:      "ACTIVE",
   PROMOTED:    "PROMOTED",
   TRANSFERRED: "TRANSFERRED",
   LEFT:        "LEFT",
 } as const;
+
 type EnrollmentStatus = (typeof ES)[keyof typeof ES];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const asEnum = <T>(v: string): T => v as any;
 
 // ── Academic Years ───────────────────────────────────────────
 
@@ -130,8 +137,8 @@ export async function listEnrollments(
       ...(filter.academicYearId ? { academicYearId: filter.academicYearId } : {}),
       ...(filter.sectionId ? { sectionId: filter.sectionId } : {}),
       ...(filter.status
-        ? { status: filter.status as EnrollmentStatus }
-        : { status: ES.ACTIVE }),
+        ? { status: asEnum<EnrollmentStatus>(filter.status) }
+        : { status: asEnum<EnrollmentStatus>(ES.ACTIVE) }),
     },
     include: {
       student: {
@@ -172,7 +179,7 @@ export async function enrollStudent(
 
   const [enrollment] = await prisma.$transaction([
     prisma.enrollment.create({
-      data: { schoolId, studentId, sectionId, academicYearId, status: ES.ACTIVE },
+      data: { schoolId, studentId, sectionId, academicYearId, status: asEnum(ES.ACTIVE) },
       include: {
         student: true,
         section: { include: { class: true } },
@@ -286,7 +293,7 @@ export async function promoteStudents(
         // Seal the old enrollment
         prisma.enrollment.update({
           where: { id: oldEnrollment.id },
-          data: { status: p.action as EnrollmentStatus, promotedAt: new Date() },
+          data: { status: asEnum<EnrollmentStatus>(p.action), promotedAt: new Date() },
         }),
         // Create new enrollment (skip for LEFT students)
         ...(p.action !== "LEFT"
