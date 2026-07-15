@@ -13,22 +13,37 @@ async function main() {
 
   // Order matters — most cascading happens automatically via FK cascade,
   // but we explicitly delete from the top of the tree.
-  const deleted = await prisma.$transaction([
-    prisma.feePayment.deleteMany(),
-    prisma.feeRecord.deleteMany(),
-    prisma.attendanceRecord.deleteMany(),
-    prisma.examResult.deleteMany(),
-    prisma.exam.deleteMany(),
-    prisma.enrollment.deleteMany(),
-    prisma.student.deleteMany(),
-    prisma.classSection.deleteMany(),
-    prisma.guardian.deleteMany(),
-    prisma.schoolSettings.deleteMany(),
-    prisma.user.deleteMany(),
-    prisma.school.deleteMany(),
-  ]);
+  // Delete in dependency order (children before parents)
+  const steps: Array<{ name: string; count: number }> = [];
 
-  deleted.forEach((r, i) => console.log(`  Step ${i + 1}: deleted ${r.count} rows`));
+  const run = async (name: string, p: Promise<{ count: number }>) => {
+    const { count } = await p;
+    steps.push({ name, count });
+  };
+
+  await run("FeePayment",           prisma.feePayment.deleteMany());
+  await run("FeeItem",              prisma.feeItem.deleteMany());
+  await run("FeeRecord",            prisma.feeRecord.deleteMany());
+  await run("FeeHead",              prisma.feeHead.deleteMany());
+  await run("Attendance",           prisma.attendance.deleteMany());
+  await run("ExamResult",           prisma.examResult.deleteMany());
+  await run("Exam",                 prisma.exam.deleteMany());
+  await run("Enrollment",           prisma.enrollment.deleteMany());
+  await run("Student",              prisma.student.deleteMany());
+  await run("Section",              prisma.section.deleteMany());
+  await run("SchoolClass",          prisma.schoolClass.deleteMany());
+  await run("Guardian",             prisma.guardian.deleteMany());
+  await run("GuardianRefreshToken", prisma.guardianRefreshToken.deleteMany());
+  await run("GuardianPasswordReset",prisma.guardianPasswordReset.deleteMany());
+  await run("RefreshToken",         prisma.refreshToken.deleteMany());
+  await run("PasswordResetToken",   prisma.passwordResetToken.deleteMany());
+  await run("SchoolSettings",       prisma.schoolSettings.deleteMany());
+  await run("PaymentGatewayConfig", prisma.paymentGatewayConfig.deleteMany());
+  await run("AcademicYear",         prisma.academicYear.deleteMany());
+  await run("User",                 prisma.user.deleteMany());
+  await run("School",               prisma.school.deleteMany());
+
+  steps.forEach(({ name, count }) => console.log(`  ✓ ${name}: ${count} deleted`));
   console.log("✅ All data wiped. Database is clean.");
 }
 
