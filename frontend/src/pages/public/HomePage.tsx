@@ -35,35 +35,11 @@ const FEATURES = [
 
 const BOARDS = ["CBSE", "State Board", "ICSE", "IB"];
 
-const TESTIMONIALS = [
-  {
-    quote:
-      "We went from paper registers to a fully digital school in two weeks. The fee management alone saves us 3 hours every day.",
-    name: "R. Subramaniam",
-    role: "Principal, Greenwood Public School, Chennai",
-    initials: "RS",
-  },
-  {
-    quote:
-      "The parent portal has completely changed how families engage. Parents now check attendance and fees without calling us.",
-    name: "Anitha Krishnan",
-    role: "Admin, Sunrise Academy, Coimbatore",
-    initials: "AK",
-  },
-  {
-    quote:
-      "Class-specific fee configuration was the feature we were waiting for. Every class has different heads and it just works.",
-    name: "Mohammed Farhan",
-    role: "Administrator, Star International School, Chennai",
-    initials: "MF",
-  },
-];
-
 const STATS = [
-  { value: "50+", label: "Schools trust Kalvi" },
-  { value: "12", label: "Fully configurable modules" },
+  { value: "6+", label: "Core modules" },
   { value: "PDF", label: "Receipts & report cards" },
-  { value: "100%", label: "Multi-tenant isolation" },
+  { value: "CBSE · ICSE · IB", label: "All major boards supported" },
+  { value: "100%", label: "Your data, fully isolated" },
 ];
 
 export default function HomePage() {
@@ -110,7 +86,7 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-6 py-28 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6 animate-fade-in">
             <span className="text-yellow-300">✦</span>
-            Multi-tenant · Fully configurable · Any Indian board
+            Any school · Fully configurable · CBSE · State Board · ICSE · IB
           </div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight animate-slide-up">
@@ -139,7 +115,7 @@ export default function HomePage() {
           </div>
 
           <p className="mt-4 text-sm text-brand-200 animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            No credit card required · Greenwood & Sunrise demo schools available
+            No credit card required · Set up your school in under 2 minutes
           </p>
 
           {/* Board badges */}
@@ -215,7 +191,7 @@ export default function HomePage() {
               Built for Indian schools
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mt-2">
-              Every school is different.<br />Kalvi adapts.
+              Every school is different.<br />Kalvi fits yours.
             </h2>
             <p className="text-slate-500 mt-4 leading-relaxed">
               Configure your class range (LKG to Class 12), board, currency, sections
@@ -250,7 +226,7 @@ export default function HomePage() {
           {/* Mock config card */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-2">
-              ⚙️ Preferences — Greenwood Public School
+              ⚙️ School Preferences — Example Setup
             </h3>
             {[
               ["Board", "CBSE"],
@@ -288,32 +264,27 @@ export default function HomePage() {
       {/* ── Testimonials ────────────────────────────────────── */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-800">
-              Trusted by school administrators
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4">
+              Built for school administrators
             </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.name}
-                className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm"
-              >
-                <div className="text-yellow-400 text-xl mb-4">★★★★★</div>
-                <p className="text-slate-700 text-sm leading-relaxed italic">
-                  "{t.quote}"
-                </p>
-                <div className="mt-5 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
-                    {t.initials}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">{t.name}</p>
-                    <p className="text-xs text-slate-400">{t.role}</p>
-                  </div>
+            <p className="text-slate-500 max-w-2xl mx-auto">
+              Kalvi is designed from the ground up for principals, admin staff, and teachers —
+              not IT departments. If you can fill a form, you can run your school on Kalvi.
+            </p>
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
+              {[
+                { icon: "⚡", title: "Up in minutes", desc: "Register, configure your classes, and start adding students in one sitting. No installation, no IT help needed." },
+                { icon: "🔒", title: "Your data is yours", desc: "Each school is fully isolated. No other school can ever see your students, fees, or records." },
+                { icon: "📱", title: "Works on any device", desc: "Runs in any modern browser — desktop, tablet, or phone. No app to download." },
+              ].map((item) => (
+                <div key={item.title} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="text-3xl mb-3">{item.icon}</div>
+                  <h3 className="font-semibold text-slate-800 mb-1">{item.title}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -380,7 +351,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 mt-10 pt-6 border-t border-slate-800 text-center text-xs text-slate-600">
-          © {new Date().getFullYear()} Kalvi · Multi-tenant School ERP
+          © {new Date().getFullYear()} Kalvi · School Management System
         </div>
       </footer>
     </div>

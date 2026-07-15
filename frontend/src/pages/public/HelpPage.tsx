@@ -14,8 +14,8 @@ To register your school on Kalvi:
 
 1. Go to **Get Started** (top-right on any public page) or visit **/register**.
 2. Fill in:
-   - **School Name** — The full name of your school (e.g. "Greenwood Public School")
-   - **School Code** — A short, URL-safe slug (e.g. "greenwood"). Staff will use this to log in.
+   - **School Name** — The full name of your school (e.g. "Springdale High School")
+   - **School Code** — A short identifier for your school (e.g. "springdale"). Staff will use this to log in.
    - **Board** — CBSE, State Board, ICSE, or IB.
    - **Lowest / Highest Class** — The class range (e.g. Class 1 to Class 12, or LKG to Class 10).
    - **Sections per Class** — How many sections (A, B, C…) each class has.

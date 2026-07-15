@@ -77,12 +77,12 @@ const FAQ = [
     a: "Yes. The School plan comes with a 14-day free trial — no credit card required. You can register and explore all features immediately.",
   },
   {
-    q: "Can multiple schools (branches) share the same platform?",
-    a: "Absolutely. Kalvi is built multi-tenant from the ground up. Each school or branch gets its own isolated environment with separate data, users, and configuration.",
+          "Can multiple schools or branches use the same platform?",
+    a: "Yes. Kalvi supports multiple schools. Each school or branch gets its own completely isolated environment — separate students, fees, staff, and configuration.",
   },
   {
     q: "Is data from one school visible to another?",
-    a: "Never. Every record — students, fees, exams — is row-level isolated by school. No cross-tenant data access is architecturally possible.",
+    a: "Never. Every record — students, fees, exams — belongs only to your school. No other school can access your data, ever.",
   },
   {
     q: "Can parents access the system?",
