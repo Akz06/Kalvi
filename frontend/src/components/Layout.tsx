@@ -67,7 +67,7 @@ export default function Layout() {
 
   const features = config?.features;
 
-  const schoolName = config?.name ?? "School ERP";
+  const schoolName = config?.name ?? "Kalvi";
   const subtitle = config?.settings
     ? [config.settings.city, config.settings.board].filter(Boolean).join(" • ")
     : "";

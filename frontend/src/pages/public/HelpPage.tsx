@@ -10,7 +10,7 @@ const SECTIONS = [
       {
         title: "Registering your school",
         content: `
-To register your school on SchoolOS:
+To register your school on Kalvi:
 
 1. Go to **Get Started** (top-right on any public page) or visit **/register**.
 2. Fill in:
@@ -318,7 +318,7 @@ export default function HelpPage() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <span className="text-2xl">🎓</span>
-            <span className="text-xl font-bold text-brand-800">SchoolOS</span>
+            <span className="text-xl font-bold text-brand-800">Kalvi</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
             <Link to="/features" className="hover:text-brand-600 transition">Features</Link>
@@ -339,7 +339,7 @@ export default function HelpPage() {
         <div className="max-w-2xl mx-auto px-6">
           <h1 className="text-4xl font-extrabold">Help Guide</h1>
           <p className="text-brand-100 mt-3 text-lg">
-            Step-by-step guides for everything in SchoolOS.
+            Step-by-step guides for everything in Kalvi.
           </p>
         </div>
       </section>
@@ -436,10 +436,10 @@ export default function HelpPage() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-500 py-8 text-center text-sm mt-12">
-        <Link to="/" className="text-white font-bold mr-4">🎓 SchoolOS</Link>
+        <Link to="/" className="text-white font-bold mr-4">🎓 Kalvi</Link>
         <Link to="/features" className="hover:text-white mr-4 transition">Features</Link>
         <Link to="/pricing" className="hover:text-white transition">Pricing</Link>
-        <p className="mt-4 text-xs">© {new Date().getFullYear()} SchoolOS</p>
+        <p className="mt-4 text-xs">© {new Date().getFullYear()} Kalvi</p>
       </footer>
     </div>
   );

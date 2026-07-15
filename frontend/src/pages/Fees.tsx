@@ -224,7 +224,7 @@ export default function Fees() {
     const schoolSettings = config?.settings;
     return {
       school: {
-        name: config?.name ?? "School ERP",
+        name: config?.name ?? "Kalvi",
         addressLine: schoolSettings?.addressLine,
         city: schoolSettings?.city,
         state: schoolSettings?.state,

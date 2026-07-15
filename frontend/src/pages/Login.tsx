@@ -32,7 +32,7 @@ export default function Login() {
       <div className="card w-full max-w-md p-8">
         <div className="text-center mb-6">
           <div className="text-4xl">🎓</div>
-          <h1 className="text-2xl font-bold mt-2">School ERP</h1>
+          <h1 className="text-2xl font-bold mt-2">Kalvi</h1>
           <p className="text-sm text-slate-500">Multi-School Management</p>
         </div>
         <form onSubmit={submit} className="space-y-4">

@@ -126,7 +126,7 @@ export default function ReportCard() {
     const settings = config?.settings;
     return {
       school: {
-        name: config?.name ?? "School ERP",
+        name: config?.name ?? "Kalvi",
         addressLine: settings?.addressLine,
         city: settings?.city,
         state: settings?.state,

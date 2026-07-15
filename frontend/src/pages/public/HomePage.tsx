@@ -60,7 +60,7 @@ const TESTIMONIALS = [
 ];
 
 const STATS = [
-  { value: "50+", label: "Schools trust SchoolOS" },
+  { value: "50+", label: "Schools trust Kalvi" },
   { value: "12", label: "Fully configurable modules" },
   { value: "PDF", label: "Receipts & report cards" },
   { value: "100%", label: "Multi-tenant isolation" },
@@ -75,7 +75,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <span className="text-2xl">🎓</span>
-            <span className="text-xl font-bold text-brand-800">SchoolOS</span>
+            <span className="text-xl font-bold text-brand-800">Kalvi</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
             <Link to="/features" className="hover:text-brand-600 transition">Features</Link>
@@ -215,7 +215,7 @@ export default function HomePage() {
               Built for Indian schools
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mt-2">
-              Every school is different.<br />SchoolOS adapts.
+              Every school is different.<br />Kalvi adapts.
             </h2>
             <p className="text-slate-500 mt-4 leading-relaxed">
               Configure your class range (LKG to Class 12), board, currency, sections
@@ -350,7 +350,7 @@ export default function HomePage() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-xl">🎓</span>
-              <span className="text-white font-bold text-base">SchoolOS</span>
+              <span className="text-white font-bold text-base">Kalvi</span>
             </div>
             <p className="text-slate-500 leading-relaxed text-xs">
               Modern school management for CBSE, State Board, ICSE and IB schools across India.
@@ -380,7 +380,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 mt-10 pt-6 border-t border-slate-800 text-center text-xs text-slate-600">
-          © {new Date().getFullYear()} SchoolOS · Multi-tenant School ERP
+          © {new Date().getFullYear()} Kalvi · Multi-tenant School ERP
         </div>
       </footer>
     </div>

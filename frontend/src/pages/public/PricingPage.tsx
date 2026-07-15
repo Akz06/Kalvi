@@ -78,7 +78,7 @@ const FAQ = [
   },
   {
     q: "Can multiple schools (branches) share the same platform?",
-    a: "Absolutely. SchoolOS is built multi-tenant from the ground up. Each school or branch gets its own isolated environment with separate data, users, and configuration.",
+    a: "Absolutely. Kalvi is built multi-tenant from the ground up. Each school or branch gets its own isolated environment with separate data, users, and configuration.",
   },
   {
     q: "Is data from one school visible to another?",
@@ -99,7 +99,7 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <span className="text-2xl">🎓</span>
-            <span className="text-xl font-bold text-brand-800">SchoolOS</span>
+            <span className="text-xl font-bold text-brand-800">Kalvi</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
             <Link to="/features" className="hover:text-brand-600 transition">Features</Link>
@@ -219,10 +219,10 @@ export default function PricingPage() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-500 py-8 text-center text-sm">
-        <Link to="/" className="text-white font-bold mr-4">🎓 SchoolOS</Link>
+        <Link to="/" className="text-white font-bold mr-4">🎓 Kalvi</Link>
         <Link to="/features" className="hover:text-white mr-4 transition">Features</Link>
         <Link to="/help" className="hover:text-white transition">Help Guide</Link>
-        <p className="mt-4 text-xs">© {new Date().getFullYear()} SchoolOS</p>
+        <p className="mt-4 text-xs">© {new Date().getFullYear()} Kalvi</p>
       </footer>
     </div>
   );
