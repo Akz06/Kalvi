@@ -46,7 +46,7 @@ export default function CreateSchool() {
 
     setLoading(true);
     try {
-      await api.post("/schools", {
+      const res = await api.post("/schools", {
         name: form.name,
         slug: form.slug,
         city: form.city,
@@ -56,7 +56,10 @@ export default function CreateSchool() {
         maxClassLevel: Number(form.maxClassLevel),
         sectionsPerClass: Number(form.sectionsPerClass),
       });
-      // Reload user so schoolId is updated in context
+      // Store new token (scoped to the new school) and reload user
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
       await reloadUser();
       navigate("/app", { replace: true });
     } catch (err) {
