@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, parseApiError, type ApiFieldIssue } from "../api/client";
+import { parseApiError, type ApiFieldIssue } from "../api/client";
+import { publicApi } from "../lib/publicApi";
 import { useAuth } from "../context/AuthContext";
 import { FormError, FieldHint } from "../components/ui";
 
@@ -39,7 +40,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await api.post("/schools/register", {
+      await publicApi.post("/schools/register", {
         school: { name: form.name, slug: form.slug },
         admin: { name: form.adminName, email: form.email, password: form.password },
         settings: {

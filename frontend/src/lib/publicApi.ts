@@ -4,10 +4,13 @@
  */
 import axios from "axios";
 
-const BASE =
-  import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL}/api`
-    : "/api";
+function buildBase(): string {
+  const raw = import.meta.env.VITE_API_URL as string | undefined;
+  if (!raw) return "/api";
+  const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  return `${url}/api`;
+}
+const BASE = buildBase();
 
 export const publicApi = axios.create({ baseURL: BASE });
 

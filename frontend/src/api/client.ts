@@ -1,12 +1,17 @@
 import axios from "axios";
 
 // In production (Railway), VITE_API_URL is the full backend URL
-// e.g. https://kalvi-backend.up.railway.app
+// e.g. https://kalvi-backend-production.up.railway.app
 // In development, Vite's proxy forwards /api → localhost:4000
-const BASE =
-  import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL}/api`
-    : "/api";
+function buildBase(): string {
+  const raw = import.meta.env.VITE_API_URL as string | undefined;
+  if (!raw) return "/api";
+  // Defensively ensure the URL has a protocol — if Railway env var was set
+  // without https:// it would be treated as a relative path by axios.
+  const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  return `${url}/api`;
+}
+const BASE = buildBase();
 
 export const api = axios.create({
   baseURL: BASE,
