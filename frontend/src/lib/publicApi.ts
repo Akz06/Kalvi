@@ -4,7 +4,12 @@
  */
 import axios from "axios";
 
-export const publicApi = axios.create({ baseURL: "/api" });
+const BASE =
+  import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api`
+    : "/api";
+
+export const publicApi = axios.create({ baseURL: BASE });
 
 export async function getSchoolBranding(slug: string) {
   try {
