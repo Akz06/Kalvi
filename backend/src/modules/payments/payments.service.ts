@@ -295,7 +295,7 @@ export async function verifyAndRecordPayment(
 
   const status =
     newPaid >= fee.amount ? "PAID" : newPaid > 0 ? "PARTIAL" : "PENDING";
-  const receiptNo = `RCPT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const receiptNo = `RCPT-${Date.now()}-${crypto.randomInt(100000, 999999)}`;
 
   const [, updated] = await prisma.$transaction([
     prisma.feePayment.create({
@@ -365,7 +365,7 @@ export async function handleWebhook(
   const newPaid = fee.amountPaid + amountMinor;
   const status =
     newPaid >= fee.amount ? "PAID" : newPaid > 0 ? "PARTIAL" : "PENDING";
-  const receiptNo = `RCPT-WH-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const receiptNo = `RCPT-WH-${Date.now()}-${crypto.randomInt(100000, 999999)}`;
 
   await prisma.$transaction([
     prisma.feePayment.create({

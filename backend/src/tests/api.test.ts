@@ -72,13 +72,14 @@ describe("Auth (multi-tenant)", () => {
     expect(res.body.error.toLowerCase()).toContain("couldn't find an account");
   });
 
-  it("gives a clear message for a short password", async () => {
+  it("rejects a wrong password with 401 — does not reveal password policy on login", async () => {
+    // Security: login must NOT leak whether the password failed validation or
+    // was just wrong — both return 401 with the same generic message.
     const res = await request(app)
       .post("/api/auth/login")
       .send({ schoolSlug: "alpha", email: "admin@alpha.local", password: "12" });
-    expect(res.status).toBe(400);
-    const messages = res.body.details.map((d: any) => d.message).join(" ");
-    expect(messages).toContain("Password must be at least 6 characters");
+    expect(res.status).toBe(401); // 401, not 400 — never reveal policy on login
+    expect(res.body.error.toLowerCase()).toContain("couldn't find an account");
   });
 
   it("gives a clear message for an unknown school code", async () => {
@@ -127,6 +128,69 @@ describe("Onboarding", () => {
       .set("Authorization", `Bearer ${gToken}`);
     // levels 6,7,8 => 3 classes
     expect(classes.body.length).toBe(3);
+  });
+
+  it("rejects duplicate email — cannot register a second school with the same admin email", async () => {
+    const res = await request(app)
+      .post("/api/schools/register")
+      .send({
+        school: { name: "Delta Academy", slug: "delta" },
+        admin: { name: "Delta Admin", email: "admin@gamma.local", password: "Admin@123" }, // same email as gamma
+        settings: {},
+      });
+    expect(res.status).toBe(409);
+    expect(res.body.error.toLowerCase()).toContain("already exists");
+  });
+
+  it("rejects duplicate slug with a clear message", async () => {
+    const res = await request(app)
+      .post("/api/schools/register")
+      .send({
+        school: { name: "Another Gamma", slug: "gamma" }, // same slug
+        admin: { name: "Other Admin", email: "other@gamma2.local", password: "Admin@123" },
+      });
+    expect(res.status).toBe(409);
+    expect(res.body.error.toLowerCase()).toContain("school code");
+  });
+
+  it("rejects a weak password (no uppercase) with a clear message", async () => {
+    const res = await request(app)
+      .post("/api/schools/register")
+      .send({
+        school: { name: "Epsilon School", slug: "epsilon" },
+        admin: { name: "Ep Admin", email: "admin@epsilon.local", password: "admin123" }, // no uppercase
+      });
+    expect(res.status).toBe(400);
+    const msg = (res.body.details?.map((d: any) => d.message).join(" ") ?? res.body.error).toLowerCase();
+    expect(msg).toMatch(/uppercase|password/i);
+  });
+
+  it("rejects a too-short password with a clear message", async () => {
+    const res = await request(app)
+      .post("/api/schools/register")
+      .send({
+        school: { name: "Zeta School", slug: "zeta" },
+        admin: { name: "Z Admin", email: "admin@zeta.local", password: "Ab1" }, // too short
+      });
+    expect(res.status).toBe(400);
+    const msg = (res.body.details?.map((d: any) => d.message).join(" ") ?? res.body.error).toLowerCase();
+    expect(msg).toContain("8 characters");
+  });
+
+  it("normalises email to lowercase — login works regardless of case", async () => {
+    // Register with lowercase
+    await request(app)
+      .post("/api/schools/register")
+      .send({
+        school: { name: "Eta School", slug: "eta" },
+        admin: { name: "Eta Admin", email: "admin@eta.local", password: "Admin@123" },
+      });
+    // Login with mixed case — should still succeed
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ schoolSlug: "eta", email: "ADMIN@ETA.LOCAL", password: "Admin@123" });
+    expect(res.status).toBe(200);
+    expect(res.body.token).toBeTruthy();
   });
 });
 

@@ -13,7 +13,8 @@ export async function login(input: {
   password: string;
   schoolSlug?: string;
 }) {
-  const { email, password, schoolSlug } = input;
+  const { password, schoolSlug } = input;
+  const email = input.email.toLowerCase().trim(); // normalise before lookup
 
   let schoolId: string | null | undefined;
   if (schoolSlug) {
@@ -22,6 +23,8 @@ export async function login(input: {
       throw Unauthorized(
         "We couldn't find a school with that code. Please check your school code and try again."
       );
+    if (!school.active)
+      throw Unauthorized("This school account is currently inactive. Please contact support.");
     schoolId = school.id;
   }
 
@@ -95,11 +98,34 @@ export async function registerSchool(input: {
 }) {
   const { school, admin, settings } = input;
 
+  // Slug uniqueness
   const existing = await prisma.school.findUnique({ where: { slug: school.slug } });
   if (existing)
     throw Conflict("That school code is already taken. Please choose a different code.");
 
-  const hashed = await bcrypt.hash(admin.password, 10);
+  // Prevent the same email registering multiple schools — one admin account per email globally.
+  const emailExists = await prisma.user.findFirst({
+    where: { email: admin.email.toLowerCase().trim() },
+  });
+  if (emailExists)
+    throw Conflict(
+      "An account with this email address already exists. Please use a different email or log in to your existing school."
+    );
+
+  // Enforce minimum password strength (8 chars + complexity) at service layer
+  // (schema validates 8 chars; this adds complexity check)
+  const pw = admin.password;
+  const hasUpper = /[A-Z]/.test(pw);
+  const hasLower = /[a-z]/.test(pw);
+  const hasDigit = /\d/.test(pw);
+  if (!hasUpper || !hasLower || !hasDigit) {
+    throw BadRequest(
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+    );
+  }
+
+  // Normalise email to lowercase before storing
+  const hashed = await bcrypt.hash(admin.password, 12); // cost 12 for production
 
   const created = await prisma.school.create({
     data: {
@@ -119,7 +145,7 @@ export async function registerSchool(input: {
       users: {
         create: {
           name: admin.name,
-          email: admin.email,
+          email: admin.email.toLowerCase().trim(), // normalise email
           password: hashed,
           role: "ADMIN" as const,
         },

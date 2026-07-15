@@ -6,8 +6,8 @@ const board = z.enum(["CBSE", "STATE", "ICSE", "IB", "OTHER"], {
 
 export const loginSchema = z.object({
   schoolSlug: z.string().trim().min(1, "School code cannot be empty.").optional(),
-  email: z.string().email("Please enter a valid email address."),
-  password: z.string().min(6, "Password must be at least 6 characters long."),
+  email: z.string().trim().toLowerCase().email("Please enter a valid email address."),
+  password: z.string().min(1, "Password is required."), // no minimum on login — avoids leaking policy
 });
 
 export const registerSchoolSchema = z.object({
@@ -23,9 +23,16 @@ export const registerSchoolSchema = z.object({
       ),
   }),
   admin: z.object({
-    name: z.string().min(2, "Admin name must be at least 2 characters long."),
-    email: z.string().email("Admin email must be a valid email address."),
-    password: z.string().min(6, "Admin password must be at least 6 characters long."),
+    name: z.string().trim().min(2, "Admin name must be at least 2 characters long."),
+    email: z.string().trim().toLowerCase().email("Admin email must be a valid email address."),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long.")
+      .max(128, "Password must be at most 128 characters.")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+      ),
   }),
   settings: z
     .object({
@@ -35,7 +42,7 @@ export const registerSchoolSchema = z.object({
       minClassLevel: z
         .number({ invalid_type_error: "Lowest class level must be a number." })
         .int("Lowest class level must be a whole number.")
-        .min(1, "Lowest class level must be at least 1.")
+        .min(0, "Lowest class level must be 0 or above (0 = Nursery/LKG).")
         .max(20, "Lowest class level must be at most 20.")
         .optional(),
       maxClassLevel: z

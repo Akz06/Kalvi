@@ -56,7 +56,10 @@ export function errorHandler(
     }
   }
 
+  // Log full error server-side but never send stack/internals to clients
   // eslint-disable-next-line no-console
-  console.error("Unhandled error:", err);
-  return res.status(500).json({ error: "Internal Server Error" });
+  console.error("[ERROR]", err instanceof Error ? err.message : err);
+  return res.status(500).json({
+    error: "Something went wrong on our end. Please try again or contact support.",
+  });
 }

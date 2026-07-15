@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { prisma } from "../../shared/prisma.js";
 import { BadRequest, Conflict, NotFound } from "../../shared/errors.js";
 import { toMinor, moneyToMajor, MONEY_FIELDS } from "../../shared/money.js";
@@ -188,7 +189,7 @@ export async function payFee(
   }
 
   const status = computeStatus(fee.amount, newPaid);
-  const receiptNo = `RCPT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const receiptNo = `RCPT-${Date.now()}-${crypto.randomInt(100000, 999999)}`;
 
   const [, updated] = await prisma.$transaction([
     prisma.feePayment.create({
