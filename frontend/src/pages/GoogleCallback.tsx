@@ -45,7 +45,7 @@ export default function GoogleCallback() {
         code,
         redirectUri: `${window.location.origin}/auth/google/callback`,
       })
-      .then((res) => {
+      .then((res: { data: any }) => {
         const data = res.data;
 
         if (data.requiresSchoolSelection) {
