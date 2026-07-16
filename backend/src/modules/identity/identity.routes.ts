@@ -1,4 +1,5 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { asyncHandler } from "../../shared/http.js";
 import { validate } from "../../middleware/validate.js";
 import { authenticate, authorize } from "../../middleware/auth.js";
@@ -10,8 +11,18 @@ import {
   registerSchoolSchema,
   updateSettingsSchema,
 } from "./identity.schema.js";
+// NOTE: createSchoolSchema is also used by the /auth/create-school endpoint above
 import * as service from "./identity.service.js";
 import { googleCallback, googleSelectSchool } from "./google-auth.service.js";
+
+// Tight limiter only for the public /register endpoint (5 per hour per IP)
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Too many registration attempts. Please try again in an hour." },
+});
 
 // ── Auth router: /api/auth ──────────────────────────────────
 export const authRouter = Router();
@@ -100,18 +111,21 @@ schoolRouter.get(
   })
 );
 
-// PUBLIC onboarding — rate-limited at app level.
+// PUBLIC onboarding — has its own rate limiter
 schoolRouter.post(
   "/register",
+  registerLimiter,
   validate({ body: registerSchoolSchema }),
   asyncHandler(async (req, res) => {
     res.status(201).json(await service.registerSchool(req.body));
   })
 );
 
-// Authenticated: create a new school for the logged-in user
-schoolRouter.post(
-  "/",
+// ── Create school (authenticated, but NO schoolId required yet) ──────────
+// This must come BEFORE the schoolRouter.use(authenticate, resolveTenant)
+// middleware below, because resolveTenant throws if schoolId is null.
+authRouter.post(
+  "/create-school",
   authenticate,
   validate({ body: createSchoolSchema }),
   asyncHandler(async (req, res) => {
@@ -119,6 +133,7 @@ schoolRouter.post(
   })
 );
 
+// ── All routes below this line require auth + tenant context ─────────────
 schoolRouter.use(authenticate, resolveTenant);
 
 schoolRouter.get(

@@ -61,7 +61,7 @@ async function resolveGoogleUser(payload: { sub: string; email: string; name: st
       data: {
         name,
         email,
-        password: "",          // Google users have no password — login is via Google
+        password: "",          // Google users have no password — sign in is via Google only
         role: "ADMIN",
         schoolId: null,
         googleId: payload.sub,

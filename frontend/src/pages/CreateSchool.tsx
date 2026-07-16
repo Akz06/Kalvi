@@ -46,7 +46,7 @@ export default function CreateSchool() {
 
     setLoading(true);
     try {
-      const res = await api.post("/schools", {
+      const res = await api.post("/auth/create-school", {
         name: form.name,
         slug: form.slug,
         city: form.city,
