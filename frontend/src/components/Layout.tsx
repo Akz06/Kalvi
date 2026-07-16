@@ -17,7 +17,6 @@ import {
   GuardiansIcon,
   SettingsIcon,
   LogoutIcon,
-  AddSchoolIcon,
   SwitchSchoolIcon,
   ChevronDownIcon,
   ChevronUpIcon,
@@ -173,15 +172,7 @@ export default function Layout() {
               )) : (
                 <p className="px-3 py-2.5 text-xs text-slate-500">No other schools found.</p>
               )}
-              <div className="border-t border-slate-700/60">
-                <button
-                  onClick={() => { setSchoolMenuOpen(false); navigate("/create-school"); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left hover:bg-slate-700 transition text-slate-300"
-                >
-                  <AddSchoolIcon className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                  <span>Add Another School</span>
-                </button>
-              </div>
+
             </div>
           )}
         </div>
@@ -233,18 +224,7 @@ export default function Layout() {
 
         {/* User footer */}
         <div className="border-t border-slate-700/60 flex-shrink-0">
-          {/* Add school — single school users see this always */}
-          {schools.length <= 1 && (
-            <div className="px-3 pt-3">
-              <button
-                onClick={() => navigate("/create-school")}
-                className="w-full flex items-center gap-2.5 rounded-md px-3 py-2 text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition"
-              >
-                <AddSchoolIcon className="w-4 h-4 flex-shrink-0" />
-                <span>Add Another School</span>
-              </button>
-            </div>
-          )}
+
 
           {/* User info + logout */}
           <div className="p-3">
