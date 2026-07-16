@@ -42,13 +42,8 @@ export function Modal({
   );
 }
 
-export function Spinner() {
-  return (
-    <div className="flex justify-center py-10">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-    </div>
-  );
-}
+// Re-exported from Loader.tsx — all existing imports continue to work
+export { Spinner, SectionLoader, PageLoader, InlineLoader } from "./Loader";
 
 export function EmptyState({ text }: { text: string }) {
   return (

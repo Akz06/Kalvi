@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useConfig, type Features } from "../context/ConfigContext";
-import { Spinner } from "./ui";
+import { PageLoader } from "./Loader";
 import {
   DashboardIcon,
   StudentsIcon,
@@ -89,7 +89,7 @@ export default function Layout() {
   const [schoolMenuOpen, setSchoolMenuOpen] = useState(false);
   const [switching, setSwitching] = useState<string | null>(null);
 
-  if (loading) return <Spinner />;
+  if (loading) return <PageLoader />;
 
   const features = config?.features;
   const schoolName = config?.name ?? "Kalvi";

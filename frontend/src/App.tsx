@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { useParentAuth, ParentAuthProvider } from "./context/ParentAuthContext";
 import { ConfigProvider } from "./context/ConfigContext";
-import { Spinner } from "./components/ui";
+import { PageLoader } from "./components/Loader";
 import Layout from "./components/Layout";
 import ParentLayout from "./components/ParentLayout";
 
@@ -43,7 +43,7 @@ import ParentExams from "./pages/parent/ParentExams";
 // ── Admin guard ──────────────────────────────────────────────
 function Protected({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
-  if (loading) return <Spinner />;
+  if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
@@ -51,7 +51,7 @@ function Protected({ children }: { children: JSX.Element }) {
 // ── School guard — redirect to create-school if no school yet ─
 function SchoolRequired({ children }: { children: JSX.Element }) {
   const { user, loading } = useAuth();
-  if (loading) return <Spinner />;
+  if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/login" replace />;
   if (!user.schoolId) return <Navigate to="/create-school" replace />;
   return children;
@@ -60,7 +60,7 @@ function SchoolRequired({ children }: { children: JSX.Element }) {
 // ── Parent guard ─────────────────────────────────────────────
 function ParentProtected({ children }: { children: JSX.Element }) {
   const { guardian, loading } = useParentAuth();
-  if (loading) return <Spinner />;
+  if (loading) return <PageLoader />;
   if (!guardian) return <Navigate to="/parent/login" replace />;
   return children;
 }
