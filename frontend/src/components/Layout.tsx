@@ -172,6 +172,19 @@ export default function Layout() {
               )) : (
                 <p className="px-3 py-2.5 text-xs text-slate-500">No other schools found.</p>
               )}
+              {/* Add another school — always at bottom of switcher */}
+              <div className="border-t border-slate-700/60">
+                <NavLink
+                  to="/create-school"
+                  onClick={() => setSchoolMenuOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition"
+                >
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Add Another School</span>
+                </NavLink>
+              </div>
 
             </div>
           )}
@@ -224,8 +237,6 @@ export default function Layout() {
 
         {/* User footer */}
         <div className="border-t border-slate-700/60 flex-shrink-0">
-
-
           {/* User info + logout */}
           <div className="p-3">
             <div className="flex items-center gap-2.5 mb-2 px-1">
