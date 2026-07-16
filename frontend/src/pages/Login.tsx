@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api, parseApiError } from "../api/client";
@@ -12,22 +12,19 @@ interface SchoolOption {
 }
 
 type Step = "credentials" | "pick-school";
-type PickMode = "password" | "google"; // how the user authenticated
 
 export default function Login() {
   const { loginWithToken } = useAuth();
   const navigate = useNavigate();
 
   const [step, setStep] = useState<Step>("credentials");
-  const [pickMode, setPickMode] = useState<PickMode>("password");
 
   // Password login state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // School picker state (both modes)
+  // School picker state
   const [schools, setSchools] = useState<SchoolOption[]>([]);
-  const [googleEmail, setGoogleEmail] = useState(""); // used by Google school picker
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +39,7 @@ export default function Login() {
     navigate(data.user.schoolId ? "/app" : "/create-school", { replace: true });
   }
 
-  // ── Step 1a: email + password ────────────────────────────────────────────
+  // ── Email + password login ───────────────────────────────────────────────
   async function submitCredentials(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -52,7 +49,6 @@ export default function Login() {
 
       if (res.data.requiresSchoolSelection) {
         setSchools(res.data.schools);
-        setPickMode("password");
         setStep("pick-school");
         return;
       }
@@ -65,45 +61,12 @@ export default function Login() {
     }
   }
 
-  // ── Step 1b: Google id_token ─────────────────────────────────────────────
-  const handleGoogleToken = useCallback(async (idToken: string) => {
-    setError("");
-    setLoading(true);
-    try {
-      const res = await api.post("/auth/google", { idToken });
-
-      if (res.data.requiresSchoolSelection) {
-        setSchools(res.data.schools);
-        setGoogleEmail(res.data._email ?? "");
-        setPickMode("google");
-        setStep("pick-school");
-        return;
-      }
-
-      handleLoginResponse(res.data);
-    } catch (err) {
-      setError(parseApiError(err, "Google sign-in failed. Please try again.").message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // ── Step 2: pick school ──────────────────────────────────────────────────
+  // ── Step 2: pick school (password users only) ───────────────────────────
   async function selectSchool(slug: string) {
     setSwitchingSlug(slug);
     setError("");
     try {
-      let res;
-      if (pickMode === "google") {
-        // Google flow: no password — just email + schoolSlug
-        res = await api.post("/auth/google/select-school", {
-          email: googleEmail,
-          schoolSlug: slug,
-        });
-      } else {
-        // Password flow: re-login with scoped slug
-        res = await api.post("/auth/login", { email, password, schoolSlug: slug });
-      }
+      const res = await api.post("/auth/login", { email, password, schoolSlug: slug });
       handleLoginResponse(res.data);
     } catch (err) {
       setError(parseApiError(err, "Could not open that school.").message);
@@ -137,8 +100,8 @@ export default function Login() {
           {/* ── STEP 1: Credentials ── */}
           {step === "credentials" && (
             <div className="space-y-5">
-              {/* Google Sign-In button */}
-              <GoogleSignInButton onToken={handleGoogleToken} />
+              {/* Google Sign-In button — redirects to Google, returns to /auth/google/callback */}
+              <GoogleSignInButton />
 
               {/* Divider */}
               <div className="flex items-center gap-3">

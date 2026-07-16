@@ -11,7 +11,7 @@ import {
   updateSettingsSchema,
 } from "./identity.schema.js";
 import * as service from "./identity.service.js";
-import { googleSignIn, googleSelectSchool } from "./google-auth.service.js";
+import { googleCallback, googleSelectSchool } from "./google-auth.service.js";
 
 // ── Auth router: /api/auth ──────────────────────────────────
 export const authRouter = Router();
@@ -33,20 +33,22 @@ authRouter.post(
   })
 );
 
-// ── Google Sign-In ──────────────────────────────────────────
-// Receives Google id_token from the frontend, verifies with Google's
-// public keys, then finds-or-creates the user and returns a Kalvi JWT.
+// ── Google Sign-In (OAuth2 redirect flow) ───────────────────
+// Step 1: Frontend redirects user to Google with client_id + redirect_uri.
+// Step 2: Google redirects to /auth/google/callback with a `code`.
+// Step 3: Frontend POSTs { code, redirectUri } to this endpoint.
+// Step 4: Backend exchanges code for id_token, verifies, finds/creates user.
 authRouter.post(
-  "/google",
+  "/google/callback",
   asyncHandler(async (req, res) => {
-    const { idToken } = req.body;
-    if (!idToken) return res.status(400).json({ error: "idToken is required." });
-    res.json(await googleSignIn(idToken));
+    const { code, redirectUri } = req.body;
+    if (!code || !redirectUri)
+      return res.status(400).json({ error: "code and redirectUri are required." });
+    res.json(await googleCallback(code, redirectUri));
   })
 );
 
 // Google school selector — called when user has multiple schools after Google sign-in.
-// Frontend sends the email (extracted from the Google response) + chosen schoolSlug.
 authRouter.post(
   "/google/select-school",
   asyncHandler(async (req, res) => {

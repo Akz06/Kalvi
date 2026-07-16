@@ -75,8 +75,8 @@ export default function Signup() {
           </p>
         </div>
 
-        {/* Google sign-up */}
-        <GoogleSignInButton onToken={handleGoogleToken} />
+        {/* Google sign-up — redirects to Google, returns via /auth/google/callback */}
+        <GoogleSignInButton />
 
         {/* Divider */}
         <div className="flex items-center gap-3">

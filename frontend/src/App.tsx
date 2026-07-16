@@ -17,6 +17,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Signup from "./pages/Signup";
 import CreateSchool from "./pages/CreateSchool";
+import GoogleCallback from "./pages/GoogleCallback";
 
 // Admin pages
 import Dashboard from "./pages/Dashboard";
@@ -78,6 +79,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
         <Route path="/create-school" element={
           <Protected>
             <ConfigProvider>

@@ -4,20 +4,33 @@ import { signToken } from "../../shared/jwt.js";
 import { BadRequest, Unauthorized } from "../../shared/errors.js";
 import { env } from "../../config/env.js";
 
-const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+// ── OAuth2 code exchange (redirect flow) ────────────────────────────────────
+// Called by the frontend callback page with `code` + `redirectUri`.
+// We exchange the code for tokens, extract the user's profile, then
+// find-or-create the Kalvi user and return a JWT exactly like googleSignIn().
+export async function googleCallback(code: string, redirectUri: string) {
+  const oauth2Client = new OAuth2Client(
+    env.GOOGLE_CLIENT_ID,
+    env.GOOGLE_CLIENT_SECRET,
+    redirectUri
+  );
 
-export async function googleSignIn(idToken: string) {
-  // ── 1. Verify the id_token with Google ─────────────────────────────────
   let payload: { sub: string; email: string; name: string; picture?: string };
+
   try {
-    const ticket = await client.verifyIdToken({
-      idToken,
+    const { tokens } = await oauth2Client.getToken(code);
+    if (!tokens.id_token) throw new Error("No id_token in token response");
+
+    const ticket = await oauth2Client.verifyIdToken({
+      idToken: tokens.id_token,
       audience: env.GOOGLE_CLIENT_ID,
     });
+
     const p = ticket.getPayload();
     if (!p || !p.email_verified || !p.email) {
       throw new Error("Unverified Google account.");
     }
+
     payload = {
       sub: p.sub,
       email: p.email.toLowerCase().trim(),
@@ -25,11 +38,15 @@ export async function googleSignIn(idToken: string) {
       picture: p.picture,
     };
   } catch {
-    throw Unauthorized(
-      "Google sign-in failed. The token is invalid or expired — please try again."
-    );
+    throw Unauthorized("Google sign-in failed. Please try again.");
   }
 
+  // Reuse the same find-or-create logic as the id_token flow
+  return resolveGoogleUser(payload);
+}
+
+// ── Shared: find-or-create Kalvi user from verified Google payload ───────────
+async function resolveGoogleUser(payload: { sub: string; email: string; name: string; picture?: string }) {
   const { email, name } = payload;
 
   // ── 2. Find all existing users for this email ──────────────────────────
