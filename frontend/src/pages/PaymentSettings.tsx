@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { api, parseApiError } from "../api/client";
 import { PageHeader, Spinner, FormError } from "../components/ui";
 import { useConfig } from "../context/ConfigContext";
+import { CashIcon, CardIcon, UpiIcon, BankIcon, ChequeIcon, GlobeIcon, CheckIcon, WebhookIcon, KeyIcon, EyeIcon, EyeOffIcon, CopyIcon, InfoIcon } from "../components/icons";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -67,13 +68,13 @@ const PROVIDERS: { value: Provider; label: string; hint: string }[] = [
   },
 ];
 
-const ALL_MODES: { value: PayMode; label: string; icon: string }[] = [
-  { value: "CASH",   label: "Cash",         icon: "💵" },
-  { value: "CARD",   label: "Card",         icon: "💳" },
-  { value: "UPI",    label: "UPI",          icon: "📱" },
-  { value: "BANK",   label: "Bank Transfer",icon: "🏦" },
-  { value: "CHEQUE", label: "Cheque",       icon: "📝" },
-  { value: "ONLINE", label: "Online (Gateway)", icon: "🌐" },
+const ALL_MODES: { value: PayMode; label: string; Icon: React.ComponentType<{className?:string}> }[] = [
+  { value: "CASH",   label: "Cash",             Icon: CashIcon },
+  { value: "CARD",   label: "Card",             Icon: CardIcon },
+  { value: "UPI",    label: "UPI",              Icon: UpiIcon },
+  { value: "BANK",   label: "Bank Transfer",    Icon: BankIcon },
+  { value: "CHEQUE", label: "Cheque",           Icon: ChequeIcon },
+  { value: "ONLINE", label: "Online (Gateway)", Icon: GlobeIcon },
 ];
 
 const TABS = ["General", "Credentials", "Payment Modes", "Webhook"] as const;
@@ -447,7 +448,7 @@ export default function PaymentSettings() {
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm"
                       onClick={() => setShowSecret((s) => !s)}
                     >
-                      {showSecret ? "🙈" : "👁️"}
+                      {showSecret ? <EyeOffIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                     </button>
                   </div>
                   <p className="text-xs text-slate-400 mt-1">
@@ -505,10 +506,10 @@ export default function PaymentSettings() {
                         : "border-slate-200 text-slate-500 hover:border-slate-300"
                     } ${isLast ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                   >
-                    <span className="text-2xl">{m.icon}</span>
+                    <m.Icon className="w-6 h-6" />
                     <span>{m.label}</span>
                     {enabled ? (
-                      <span className="text-xs text-green-600 font-semibold">✓ Enabled</span>
+                      <span className="text-xs text-green-600 font-semibold flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Enabled</span>
                     ) : (
                       <span className="text-xs text-slate-400">Disabled</span>
                     )}
@@ -517,8 +518,7 @@ export default function PaymentSettings() {
               })}
             </div>
             <p className="text-xs text-slate-400 mt-4">
-              💡 Enable <strong>Online (Gateway)</strong> only after
-              configuring your gateway credentials.
+              <span className="flex items-center gap-1.5"><InfoIcon className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" /> Enable <strong>Online (Gateway)</strong> only after configuring your gateway credentials.</span>
             </p>
           </section>
         )}
@@ -546,7 +546,7 @@ export default function PaymentSettings() {
                 onClick={copyWebhook}
                 className="btn-ghost text-sm whitespace-nowrap"
               >
-                📋 Copy
+                <CopyIcon className="w-3.5 h-3.5 mr-1 inline" /> Copy
               </button>
             </div>
 
@@ -574,10 +574,9 @@ export default function PaymentSettings() {
               </ol>
             </div>
 
-            <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 text-xs text-blue-700">
-              💡 <strong>Test your webhook:</strong> Use Razorpay's "Test
-              Webhook" button or send a test event from your gateway dashboard
-              to verify the setup before going live.
+            <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 text-xs text-blue-700 flex items-start gap-2">
+              <InfoIcon className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span><strong>Test your webhook:</strong> Use Razorpay's "Test Webhook" button or send a test event from your gateway dashboard to verify the setup before going live.</span>
             </div>
           </section>
         )}

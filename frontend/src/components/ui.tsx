@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CloseIcon } from "./icons";
 
 export function PageHeader({
   title,
@@ -33,7 +34,7 @@ export function Modal({
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
           <h3 className="font-semibold">{title}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
-            ✕
+            <CloseIcon className="w-4 h-4" />
           </button>
         </div>
         <div className="p-5">{children}</div>

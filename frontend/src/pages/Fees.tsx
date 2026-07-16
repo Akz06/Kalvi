@@ -9,6 +9,7 @@ import {
   FieldHint,
 } from "../components/ui";
 import { formatDate, money } from "../lib/format";
+import { CloseIcon } from "../components/icons";
 import { useConfig } from "../context/ConfigContext";
 import { DownloadPDFButton } from "../components/pdf/DownloadPDFButton";
 import { ReceiptPDF } from "../components/pdf/ReceiptPDF";
@@ -480,7 +481,7 @@ export default function Fees() {
                     title="Remove line"
                     disabled={lines.length === 1}
                   >
-                    ✕
+                    <CloseIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ))}
@@ -526,9 +527,9 @@ export default function Fees() {
             label="Download Receipt"
           />
           <button
-            className="ml-2 text-slate-400 hover:text-slate-600 text-sm"
+            className="ml-2 text-slate-400 hover:text-slate-600"
             onClick={() => setLastReceipt(null)}
-          >✕</button>
+          ><CloseIcon className="w-4 h-4" /></button>
         </div>
       )}
 

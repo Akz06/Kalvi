@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { parseApiError, type ApiFieldIssue } from "../api/client";
 import { publicApi } from "../lib/publicApi";
 import { useAuth } from "../context/AuthContext";
+import { ArrowRightIcon, ArrowLeftIcon } from "../components/icons";
 import { FormError, FieldHint } from "../components/ui";
 
 export default function Register() {
@@ -77,9 +78,9 @@ export default function Register() {
         {/* Step indicators */}
         <div className="flex gap-2 mb-6 justify-center text-xs text-slate-400">
           <span className="bg-brand-100 text-brand-700 font-semibold px-3 py-1 rounded-full">1 · School Info</span>
-          <span className="px-3 py-1">→</span>
+          <ArrowRightIcon className="w-4 h-4 text-slate-300 self-center" />
           <span className="bg-brand-100 text-brand-700 font-semibold px-3 py-1 rounded-full">2 · Admin Account</span>
-          <span className="px-3 py-1">→</span>
+          <ArrowRightIcon className="w-4 h-4 text-slate-300 self-center" />
           <span className="bg-brand-100 text-brand-700 font-semibold px-3 py-1 rounded-full">3 · Class Setup</span>
         </div>
 
@@ -188,9 +189,9 @@ export default function Register() {
             <FormError message={error} issues={issues} />
           </div>
           <div className="flex items-center justify-between pt-2">
-            <Link to="/login" className="text-sm text-brand-600">← Already registered?</Link>
+            <Link to="/login" className="text-sm text-brand-600 flex items-center gap-1"><ArrowLeftIcon className="w-3.5 h-3.5" /> Already registered?</Link>
             <button className="btn-primary px-8" disabled={loading}>
-              {loading ? "Setting up your school…" : "Create My School →"}
+              {loading ? "Setting up your school…" : <span className="flex items-center gap-1.5">Create My School <ArrowRightIcon className="w-4 h-4" /></span>}
             </button>
           </div>
         </form>

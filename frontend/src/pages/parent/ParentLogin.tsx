@@ -116,7 +116,7 @@ export default function ParentLogin() {
             href="/login"
             className="text-sm text-slate-400 hover:text-slate-600 transition"
           >
-            ← Back to Admin Login
+            Back to Admin Login
           </a>
         </div>
 

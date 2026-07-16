@@ -9,6 +9,7 @@ import {
   FieldHint,
 } from "../components/ui";
 import { formatDate } from "../lib/format";
+import { ArrowRightIcon, ChevronRightIcon } from "../components/icons";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface SectionOpt {
@@ -547,7 +548,7 @@ function PreviousYearStudentsTab() {
                             className="text-brand-600 hover:text-brand-800 text-xs font-medium"
                             onClick={() => openReEnroll(e)}
                           >
-                            Re-enroll →
+                            Re-enroll <ChevronRightIcon className="w-3 h-3 inline" />
                           </button>
                         )}
                       </td>

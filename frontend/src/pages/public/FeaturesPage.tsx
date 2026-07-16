@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { CheckIcon, ArrowRightIcon } from "../../components/icons";
 
 const MODULES = [
   {
@@ -161,7 +162,7 @@ export default function FeaturesPage() {
             to="/register"
             className="mt-8 inline-flex bg-white text-brand-800 font-bold px-8 py-3.5 rounded-xl hover:bg-brand-50 transition shadow-lg"
           >
-            Try All Features Free →
+            Try All Features Free <ArrowRightIcon className="w-4 h-4 inline ml-1" />
           </Link>
         </div>
       </section>
@@ -185,7 +186,7 @@ export default function FeaturesPage() {
                 <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
                   {mod.highlights.map((h) => (
                     <li key={h} className="flex items-start gap-2 text-sm text-slate-700">
-                      <span className="text-teal-500 font-bold mt-0.5 flex-shrink-0">✓</span>
+                      <CheckIcon className="w-3.5 h-3.5 text-teal-500 mt-0.5 flex-shrink-0" />
                       {h}
                     </li>
                   ))}

@@ -130,16 +130,18 @@ describe("Onboarding", () => {
     expect(classes.body.length).toBe(3);
   });
 
-  it("rejects duplicate email — cannot register a second school with the same admin email", async () => {
+  it("allows same email to register a second school (multi-school admin design)", async () => {
+    // By design: one email can be admin of multiple schools.
+    // Only registering the SAME email in the SAME school is rejected.
     const res = await request(app)
       .post("/api/schools/register")
       .send({
         school: { name: "Delta Academy", slug: "delta" },
-        admin: { name: "Delta Admin", email: "admin@gamma.local", password: "Admin@123" }, // same email as gamma
+        admin: { name: "Delta Admin", email: "admin@gamma.local", password: "Admin@123" },
         settings: {},
       });
-    expect(res.status).toBe(409);
-    expect(res.body.error.toLowerCase()).toContain("already exists");
+    // Should succeed (201) — different school, same email is allowed
+    expect(res.status).toBe(201);
   });
 
   it("rejects duplicate slug with a clear message", async () => {
@@ -178,17 +180,18 @@ describe("Onboarding", () => {
   });
 
   it("normalises email to lowercase — login works regardless of case", async () => {
-    // Register with lowercase
-    await request(app)
+    // Register with lowercase using unique slug
+    const reg = await request(app)
       .post("/api/schools/register")
       .send({
-        school: { name: "Eta School", slug: "eta" },
-        admin: { name: "Eta Admin", email: "admin@eta.local", password: "Admin@123" },
+        school: { name: "Eta School", slug: "eta-unique-99" },
+        admin: { name: "Eta Admin", email: "admin@eta-unique.local", password: "Admin@123" },
       });
-    // Login with mixed case — should still succeed
+    expect(reg.status).toBe(201);
+    // Login with mixed case + schoolSlug — should still succeed (email normalised to lowercase)
     const res = await request(app)
       .post("/api/auth/login")
-      .send({ schoolSlug: "eta", email: "ADMIN@ETA.LOCAL", password: "Admin@123" });
+      .send({ schoolSlug: "eta-unique-99", email: "ADMIN@ETA-UNIQUE.LOCAL", password: "Admin@123" });
     expect(res.status).toBe(200);
     expect(res.body.token).toBeTruthy();
   });

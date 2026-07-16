@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { publicApi, api } from "../lib/publicApi";
 import { parseApiError, type ApiFieldIssue } from "../api/client";
+import { ArrowLeftIcon } from "../components/icons";
 import { FormError } from "../components/ui";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 
@@ -75,7 +76,7 @@ export default function Signup() {
           </p>
         </div>
 
-        {/* Google sign-up — redirects to Google, returns via /auth/google/callback */}
+        {/* Google sign-up */}
         <GoogleSignInButton />
 
         {/* Divider */}
@@ -142,7 +143,7 @@ export default function Signup() {
           </p>
           <p>
             <Link to="/" className="text-slate-400 hover:text-slate-600 transition">
-              ← Back to home
+               <ArrowLeftIcon className="w-3.5 h-3.5 inline mr-0.5" /> Back to home
             </Link>
           </p>
         </div>

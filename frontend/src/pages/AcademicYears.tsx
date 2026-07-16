@@ -21,6 +21,7 @@ import {
   FieldHint,
 } from "../components/ui";
 import { formatDate } from "../lib/format";
+import { CheckCircleIcon, CheckIcon, SuccessIcon, WarningIcon, SkipIcon, ArrowRightIcon } from "../components/icons";
 
 // ── Types ────────────────────────────────────────────────────
 interface AcademicYear {
@@ -195,15 +196,15 @@ function YearsTab() {
                 <tr key={y.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 font-semibold">{y.name}</td>
                   <td className="px-4 py-3 text-slate-600">
-                    {formatDate(y.startDate)} → {formatDate(y.endDate)}
+                    {formatDate(y.startDate)} <ArrowRightIcon className="w-3 h-3 inline mx-1" /> {formatDate(y.endDate)}
                   </td>
                   <td className="px-4 py-3">{y._count.enrollments}</td>
                   <td className="px-4 py-3">{y._count.exams}</td>
                   <td className="px-4 py-3">{y._count.fees}</td>
                   <td className="px-4 py-3">
                     {y.active ? (
-                      <span className="badge bg-green-100 text-green-700 font-semibold">
-                        ✓ Active
+                      <span className="badge bg-green-100 text-green-700 font-semibold flex items-center gap-1">
+                        <CheckIcon className="w-3 h-3" /> Active
                       </span>
                     ) : (
                       <span className="badge bg-slate-100 text-slate-500">Inactive</span>
@@ -380,7 +381,7 @@ function EnrollTab() {
                 </select>
                 {unenrolled.length === 0 && (
                   <p className="text-xs text-green-600 mt-1">
-                    ✓ All students are enrolled in this year.
+                    <CheckCircleIcon className="w-3.5 h-3.5 inline mr-1" />All students are enrolled in this year.
                   </p>
                 )}
               </div>
@@ -688,13 +689,13 @@ function PromoteTab() {
       {/* Result summary */}
       {result && (
         <div className="card p-5 border-l-4 border-green-500">
-          <h3 className="font-semibold text-green-800 mb-2">✅ Promotion Complete</h3>
+          <h3 className="font-semibold text-green-800 mb-2 flex items-center gap-2"><SuccessIcon className="w-5 h-5" /> Promotion Complete</h3>
           <ul className="text-sm text-slate-700 space-y-1">
-            <li>✓ Promoted / transferred: <strong>{result.promoted}</strong></li>
-            <li>⏩ Skipped (already enrolled): <strong>{result.skipped}</strong></li>
+            <li className="flex items-center gap-1.5"><CheckIcon className="w-3.5 h-3.5 text-green-600" /> Promoted / transferred: <strong>{result.promoted}</strong></li>
+            <li className="flex items-center gap-1.5"><SkipIcon className="w-3.5 h-3.5 text-amber-500" /> Skipped (already enrolled): <strong>{result.skipped}</strong></li>
             {result.errors.length > 0 && (
-              <li className="text-red-600">
-                ⚠️ Errors: {result.errors.join("; ")}
+              <li className="text-red-600 flex items-center gap-1.5">
+                <WarningIcon className="w-3.5 h-3.5" /> Errors: {result.errors.join("; ")}
               </li>
             )}
           </ul>

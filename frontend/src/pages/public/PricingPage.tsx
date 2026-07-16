@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { CheckIcon } from "../../components/icons";
 
 const PLANS = [
   {
@@ -160,7 +161,7 @@ export default function PricingPage() {
               <ul className="mt-6 space-y-2.5 flex-1">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm">
-                    <span className={`font-bold mt-0.5 flex-shrink-0 ${plan.highlight ? "text-teal-300" : "text-teal-600"}`}>✓</span>
+                    <CheckIcon className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${plan.highlight ? "text-teal-300" : "text-teal-600"}`} />
                     <span className={plan.highlight ? "text-brand-100" : "text-slate-600"}>{f}</span>
                   </li>
                 ))}

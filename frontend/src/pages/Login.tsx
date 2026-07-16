@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api, parseApiError } from "../api/client";
 import { FormError } from "../components/ui";
+import { ArrowRightIcon, ArrowLeftIcon } from "../components/icons";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 
 interface SchoolOption {
@@ -12,19 +13,22 @@ interface SchoolOption {
 }
 
 type Step = "credentials" | "pick-school";
+type PickMode = "password" | "google"; // how the user authenticated
 
 export default function Login() {
   const { loginWithToken } = useAuth();
   const navigate = useNavigate();
 
   const [step, setStep] = useState<Step>("credentials");
+  const [pickMode, setPickMode] = useState<PickMode>("password");
 
   // Password login state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // School picker state
+  // School picker state (both modes)
   const [schools, setSchools] = useState<SchoolOption[]>([]);
+  const [googleEmail, setGoogleEmail] = useState(""); // used by Google school picker
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,7 +43,7 @@ export default function Login() {
     navigate(data.user.schoolId ? "/app" : "/create-school", { replace: true });
   }
 
-  // ── Email + password login ───────────────────────────────────────────────
+  // ── Step 1a: email + password ────────────────────────────────────────────
   async function submitCredentials(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -49,6 +53,7 @@ export default function Login() {
 
       if (res.data.requiresSchoolSelection) {
         setSchools(res.data.schools);
+        setPickMode("password");
         setStep("pick-school");
         return;
       }
@@ -61,12 +66,45 @@ export default function Login() {
     }
   }
 
-  // ── Step 2: pick school (password users only) ───────────────────────────
+  // ── Step 1b: Google id_token ─────────────────────────────────────────────
+  const handleGoogleToken = useCallback(async (idToken: string) => {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await api.post("/auth/google", { idToken });
+
+      if (res.data.requiresSchoolSelection) {
+        setSchools(res.data.schools);
+        setGoogleEmail(res.data._email ?? "");
+        setPickMode("google");
+        setStep("pick-school");
+        return;
+      }
+
+      handleLoginResponse(res.data);
+    } catch (err) {
+      setError(parseApiError(err, "Google sign-in failed. Please try again.").message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ── Step 2: pick school ──────────────────────────────────────────────────
   async function selectSchool(slug: string) {
     setSwitchingSlug(slug);
     setError("");
     try {
-      const res = await api.post("/auth/login", { email, password, schoolSlug: slug });
+      let res;
+      if (pickMode === "google") {
+        // Google flow: no password — just email + schoolSlug
+        res = await api.post("/auth/google/select-school", {
+          email: googleEmail,
+          schoolSlug: slug,
+        });
+      } else {
+        // Password flow: re-login with scoped slug
+        res = await api.post("/auth/login", { email, password, schoolSlug: slug });
+      }
       handleLoginResponse(res.data);
     } catch (err) {
       setError(parseApiError(err, "Could not open that school.").message);
@@ -100,7 +138,7 @@ export default function Login() {
           {/* ── STEP 1: Credentials ── */}
           {step === "credentials" && (
             <div className="space-y-5">
-              {/* Google Sign-In button — redirects to Google, returns to /auth/google/callback */}
+              {/* Google Sign-In button */}
               <GoogleSignInButton />
 
               {/* Divider */}
@@ -149,12 +187,12 @@ export default function Login() {
                 <p className="text-slate-500">
                   New to Kalvi?{" "}
                   <Link to="/signup" className="text-brand-600 font-semibold hover:underline">
-                    Create an account →
+                    Create an account <ArrowRightIcon className="w-3.5 h-3.5 inline ml-0.5" />
                   </Link>
                 </p>
                 <p>
                   <Link to="/" className="text-slate-400 hover:text-slate-600 text-xs transition">
-                    ← Back to home
+                    <ArrowLeftIcon className="w-3.5 h-3.5 inline mr-0.5" /> Back to home
                   </Link>
                 </p>
               </div>
@@ -211,7 +249,7 @@ export default function Login() {
                 onClick={() => { setStep("credentials"); setError(""); }}
                 className="w-full text-sm text-slate-400 hover:text-slate-600 pt-2 transition"
               >
-                ← Use a different account
+                <ArrowLeftIcon className="w-3.5 h-3.5 inline mr-0.5" /> Use a different account
               </button>
             </div>
           )}

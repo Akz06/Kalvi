@@ -16,9 +16,10 @@ import * as service from "./identity.service.js";
 import { googleCallback, googleSelectSchool } from "./google-auth.service.js";
 
 // Tight limiter only for the public /register endpoint (5 per hour per IP)
+// Skip in test environment so tests don't hit rate limits
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 5,
+  max: process.env.NODE_ENV === "test" ? 1000 : 5,
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: { error: "Too many registration attempts. Please try again in an hour." },

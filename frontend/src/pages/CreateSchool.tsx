@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api, parseApiError, type ApiFieldIssue } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { FormError, FieldHint } from "../components/ui";
+import { ArrowLeftIcon, ArrowRightIcon } from "../components/icons";
 
 export default function CreateSchool() {
   const { user, reloadUser } = useAuth();
@@ -218,7 +219,7 @@ export default function CreateSchool() {
                 onClick={() => navigate("/app")}
                 className="text-sm text-slate-500 hover:text-slate-700"
               >
-                ← Back to dashboard
+                <ArrowLeftIcon className="w-3.5 h-3.5 inline mr-0.5" /> Back to dashboard
               </button>
             ) : (
               <span />

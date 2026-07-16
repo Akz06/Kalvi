@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, parseApiError } from "../api/client";
 import { EmptyState, PageHeader, Spinner, FormError } from "../components/ui";
+import { CheckCircleIcon } from "../components/icons";
 
 interface SectionOpt {
   id: string;
@@ -122,8 +123,8 @@ export default function Attendance() {
               {saving ? "Saving…" : "Save Attendance"}
             </button>
             {saved && (
-              <span className="text-sm text-green-600 self-center">
-                ✓ Saved
+              <span className="text-sm text-green-600 self-center flex items-center gap-1">
+                <CheckCircleIcon className="w-4 h-4" /> Saved
               </span>
             )}
           </>

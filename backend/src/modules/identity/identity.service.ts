@@ -274,17 +274,17 @@ export async function login(input: {
     schoolId = school.id;
   }
 
-  const users = await prisma.user.findMany({
+  const allUsers = await prisma.user.findMany({
     where: { email, ...(schoolId !== undefined ? { schoolId } : {}) },
     include: { school: { select: { slug: true, name: true } } },
   });
 
-  if (users.length === 0) throw Unauthorized(BAD_CREDENTIALS);
+  if (allUsers.length === 0) throw Unauthorized(BAD_CREDENTIALS);
 
-  // Filter out null-school rows (users who signed up but haven't created a school yet)
-  const schoolUsers = users.filter((u) => u.schoolId !== null && u.school !== null);
+  // Filter to real school-linked users only
+  const schoolUsers = allUsers.filter((u) => u.schoolId !== null && u.school !== null);
 
-  // Multiple schools — return them so the client can show a picker
+  // Multiple schools — return picker
   if (schoolUsers.length > 1) {
     return {
       requiresSchoolSelection: true,
@@ -296,9 +296,8 @@ export async function login(input: {
     } as any;
   }
 
-  // If we only have null-school users (no school created yet), pick the null-school user
-  const user = schoolUsers.length === 1 ? schoolUsers[0] : users[0];
-
+  // Use school-linked user if available, else the null-school user (new user)
+  const user = schoolUsers.length === 1 ? schoolUsers[0] : allUsers[0];
   if (!user.active)
     throw Unauthorized(
       "This account has been deactivated. Please contact your school administrator."
@@ -373,13 +372,14 @@ export async function registerSchool(input: {
   if (existing)
     throw Conflict("That school code is already taken. Please choose a different code.");
 
-  // Prevent the same email registering multiple schools — one admin account per email globally.
-  const emailExists = await prisma.user.findFirst({
-    where: { email: admin.email.toLowerCase().trim() },
+  // Prevent the same email registering the SAME school twice.
+  // Allow same email across different schools (multi-school admin).
+  const emailExistsInSchool = await prisma.user.findFirst({
+    where: { email: admin.email.toLowerCase().trim(), school: { slug: school.slug } },
   });
-  if (emailExists)
+  if (emailExistsInSchool)
     throw Conflict(
-      "An account with this email address already exists. Please use a different email or log in to your existing school."
+      "An account with this email address already exists in this school. Please use a different email."
     );
 
   // Enforce minimum password strength (8 chars + complexity) at service layer

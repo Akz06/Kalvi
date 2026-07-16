@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { CheckIcon, ArrowRightIcon } from "../../components/icons";
 
 const FEATURES = [
   {
@@ -110,7 +111,7 @@ export default function HomePage() {
               to="/login"
               className="border border-white/30 bg-white/10 text-white font-semibold px-8 py-3.5 rounded-xl text-base hover:bg-white/20 transition"
             >
-              Sign In →
+              Sign In <ArrowRightIcon className="w-4 h-4 inline ml-1" />
             </Link>
           </div>
 
@@ -177,7 +178,7 @@ export default function HomePage() {
               to="/features"
               className="inline-flex items-center gap-2 text-brand-600 font-semibold hover:text-brand-800 transition"
             >
-              View all features →
+              View all features <ArrowRightIcon className="w-4 h-4 inline ml-1" />
             </Link>
           </div>
         </div>
@@ -209,7 +210,7 @@ export default function HomePage() {
                 "School branding — logo, colors, tagline, contact info",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2">
-                  <span className="text-teal-500 font-bold mt-0.5">✓</span>
+                  <CheckIcon className="w-3.5 h-3.5 text-teal-500 mt-0.5 flex-shrink-0" />
                   {item}
                 </li>
               ))}
@@ -219,7 +220,7 @@ export default function HomePage() {
               to="/register"
               className="mt-8 inline-flex bg-brand-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-brand-700 transition"
             >
-              Start Configuring Your School →
+              Start Configuring Your School <ArrowRightIcon className="w-4 h-4 inline ml-1" />
             </Link>
           </div>
 
@@ -251,7 +252,7 @@ export default function HomePage() {
                       key={m}
                       className="bg-teal-50 text-teal-700 border border-teal-200 text-xs font-medium px-2.5 py-1 rounded-full"
                     >
-                      ✓ {m}
+                      <CheckIcon className="w-3 h-3 text-teal-600 inline mr-1" />{m}
                     </span>
                   )
                 )}

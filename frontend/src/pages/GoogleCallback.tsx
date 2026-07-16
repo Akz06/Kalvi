@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { publicApi } from "../api/client";
+import { ArrowLeftIcon } from "../components/icons";
 
 interface SchoolOption {
   id: string | null;
@@ -129,7 +130,7 @@ export default function GoogleCallback() {
             onClick={() => navigate("/login")}
             className="w-full text-sm text-slate-400 hover:text-slate-600 pt-2 transition"
           >
-            ← Use a different account
+            <ArrowLeftIcon className="w-3.5 h-3.5 inline mr-1" /> Use a different account
           </button>
         </div>
       </div>
