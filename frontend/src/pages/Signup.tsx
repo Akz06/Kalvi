@@ -76,7 +76,7 @@ export default function Signup() {
         </div>
 
         {/* Google sign-up */}
-        <GoogleSignInButton onToken={handleGoogleToken} label="Sign up with Google" />
+        <GoogleSignInButton onToken={handleGoogleToken} />
 
         {/* Divider */}
         <div className="flex items-center gap-3">

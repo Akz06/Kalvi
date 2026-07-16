@@ -138,7 +138,7 @@ export default function Login() {
           {step === "credentials" && (
             <div className="space-y-5">
               {/* Google Sign-In button */}
-              <GoogleSignInButton onToken={handleGoogleToken} label="Sign in with Google" />
+              <GoogleSignInButton onToken={handleGoogleToken} />
 
               {/* Divider */}
               <div className="flex items-center gap-3">
