@@ -96,7 +96,17 @@ export async function createSchoolForUser(
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw BadRequest("User not found.");
 
-    // Create the school (no users nested — we'll link the existing user below)
+  // ── Strategy: each school gets its own User row for this email.
+  //
+  // The schema has @@unique([schoolId, email]) — so the same email CAN appear
+  // in multiple schools, each as a separate User row. This is intentional:
+  // it lets `findMany({ where: { email } })` discover all schools for a login.
+  //
+  // If the calling user has schoolId = null (fresh signup), update that row
+  // in-place (avoids a dangling null-school user row).
+  // If the calling user already belongs to a school, create a FRESH User row
+  // in the new school so the original school membership is preserved.
+
   const school = await prisma.school.create({
     data: {
       name: input.name,
@@ -117,28 +127,56 @@ export async function createSchoolForUser(
 
   await provisionClasses(school.id);
 
-  // Link the existing user to the new school (never create a duplicate User row)
-  const updatedUser = await prisma.user.update({
-    where: { id: userId },
-    data: { schoolId: school.id },
-  });
+  let schoolUser;
+
+  if (user.schoolId === null) {
+    // First school — update the existing null-school row in place
+    schoolUser = await prisma.user.update({
+      where: { id: userId },
+      data: { schoolId: school.id },
+    });
+  } else {
+    // Additional school — create a NEW User row for this school
+    // The original user row (pointing to their previous school) is untouched.
+    schoolUser = await prisma.user.create({
+      data: {
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        role: "ADMIN",
+        googleId: user.googleId ?? undefined,
+        schoolId: school.id,
+      },
+    });
+  }
 
   const token = signToken({
-    sub: updatedUser.id,
-    role: updatedUser.role,
-    email: updatedUser.email,
+    sub: schoolUser.id,
+    role: schoolUser.role,
+    email: schoolUser.email,
     schoolId: school.id,
   });
+
+  // Build the full schools list so the frontend can update its state
+  const allUserRows = await prisma.user.findMany({
+    where: { email: user.email },
+    include: { school: { select: { id: true, slug: true, name: true } } },
+  });
+  const schools = allUserRows
+    .filter((u) => u.school !== null)
+    .map((u) => u.school!)
+    .filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i);
 
   return {
     token,
     user: {
-      id: updatedUser.id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      role: updatedUser.role,
+      id: schoolUser.id,
+      name: schoolUser.name,
+      email: schoolUser.email,
+      role: schoolUser.role,
       schoolId: school.id,
       school: { id: school.id, slug: school.slug, name: school.name },
+      schools,
     },
     school: { id: school.id, slug: school.slug, name: school.name },
     message: "School created successfully.",
@@ -151,30 +189,32 @@ export async function createSchoolForUser(
 // SWITCH SCHOOL — re-issue token for a different school context
 // ─────────────────────────────────────────────────────────────
 export async function switchSchool(userId: string, schoolSlug: string) {
-  const school = await prisma.school.findUnique({
-    where: { slug: schoolSlug },
-    include: { users: { where: { email: { not: undefined } } } },
-  });
-  if (!school || !school.active)
-    throw BadRequest("School not found.");
+  const school = await prisma.school.findUnique({ where: { slug: schoolSlug } });
+  if (!school || !school.active) throw BadRequest("School not found.");
 
-  // Verify the user belongs to that school
-  const schoolUser = await prisma.user.findFirst({
-    where: {
-      id: userId,
-      school: { slug: schoolSlug },
-    },
-  });
-  // Also allow if user's email matches any user in that school
-  const currentUser = await prisma.user.findUnique({ where: { id: userId } });
-  const memberUser = await prisma.user.findFirst({
-    where: { email: currentUser?.email ?? "", schoolId: school.id },
+  // Get the calling user's email — we use email to find their row in the target school
+  const callingUser = await prisma.user.findUnique({ where: { id: userId } });
+  if (!callingUser) throw Unauthorized("User not found.");
+
+  // Each school has its own User row per email. Find the row for this email in the target school.
+  const targetUser = await prisma.user.findFirst({
+    where: { email: callingUser.email, schoolId: school.id },
+    include: { school: { select: { slug: true, name: true } } },
   });
 
-  if (!schoolUser && !memberUser)
-    throw Unauthorized("You do not have access to that school.");
+  if (!targetUser) throw Unauthorized("You do not have access to that school.");
+  if (!targetUser.active) throw Unauthorized("Your account in that school is deactivated.");
 
-  const targetUser = schoolUser ?? memberUser!;
+  // Fetch all schools for this email so the response includes the full list
+  const allUserRows = await prisma.user.findMany({
+    where: { email: callingUser.email },
+    include: { school: { select: { id: true, slug: true, name: true } } },
+  });
+  const schools = allUserRows
+    .filter((u) => u.school !== null)
+    .map((u) => u.school!)
+    .filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i);
+
   const token = signToken({
     sub: targetUser.id,
     role: targetUser.role,
@@ -191,6 +231,7 @@ export async function switchSchool(userId: string, schoolSlug: string) {
       role: targetUser.role,
       schoolId: school.id,
       school: { slug: school.slug, name: school.name },
+      schools,
     },
   };
 }

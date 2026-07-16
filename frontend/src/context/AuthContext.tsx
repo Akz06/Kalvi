@@ -84,9 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function switchSchool(slug: string) {
-    // Re-login scoped to a different school, keeping same credentials
     const res = await api.post("/auth/switch-school", { schoolSlug: slug });
     localStorage.setItem("token", res.data.token);
+    // Merge schools from the response (backend now always returns the full list)
     setUser(res.data.user);
   }
 

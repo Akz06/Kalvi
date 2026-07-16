@@ -127,7 +127,7 @@ export default function Layout() {
         <div className="px-4 py-4 border-b border-slate-700/60 flex-shrink-0">
           <button
             className="w-full text-left group"
-            onClick={() => schools.length > 1 && setSchoolMenuOpen((o) => !o)}
+            onClick={() => setSchoolMenuOpen((o) => !o)}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
@@ -141,35 +141,38 @@ export default function Layout() {
                   <p className="text-xs text-slate-400 mt-0.5 truncate">{subtitle}</p>
                 )}
               </div>
-              {schools.length > 1 && (
-                <div className="flex-shrink-0 mt-1 text-slate-400 group-hover:text-slate-200 transition">
-                  {schoolMenuOpen ? (
-                    <ChevronUpIcon className="w-4 h-4" />
-                  ) : (
-                    <ChevronDownIcon className="w-4 h-4" />
-                  )}
-                </div>
-              )}
+              <div className="flex-shrink-0 mt-1 text-slate-400 group-hover:text-slate-200 transition">
+                {schoolMenuOpen ? (
+                  <ChevronUpIcon className="w-4 h-4" />
+                ) : (
+                  <ChevronDownIcon className="w-4 h-4" />
+                )}
+              </div>
             </div>
           </button>
 
           {/* School switcher dropdown */}
-          {schoolMenuOpen && schools.length > 1 && (
+          {schoolMenuOpen && (
             <div className="mt-3 bg-slate-800 rounded-lg overflow-hidden border border-slate-700/60">
-              {schools.map((s) => (
+              {schools.length > 0 ? schools.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => handleSwitchSchool(s.slug)}
                   disabled={switching === s.slug}
                   className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-left hover:bg-slate-700 transition disabled:opacity-50"
                 >
-                  <SwitchSchoolIcon className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                  {switching === s.slug
+                    ? <svg className="w-3.5 h-3.5 text-brand-400 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                    : <SwitchSchoolIcon className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                  }
                   <span className="truncate flex-1 text-slate-200">{s.name}</span>
                   {s.slug === currentSlug && (
                     <CheckIcon className="w-3.5 h-3.5 text-brand-400 flex-shrink-0" />
                   )}
                 </button>
-              ))}
+              )) : (
+                <p className="px-3 py-2.5 text-xs text-slate-500">No other schools found.</p>
+              )}
               <div className="border-t border-slate-700/60">
                 <button
                   onClick={() => { setSchoolMenuOpen(false); navigate("/create-school"); }}
