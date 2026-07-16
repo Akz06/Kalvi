@@ -18,12 +18,19 @@ export async function signup(input: {
 }) {
   const email = input.email.toLowerCase().trim();
 
-  // Global email uniqueness — one account per email address
+  // Block signup only if a real account already exists for this email
+  // (a "real" account has a password set OR is Google-linked — i.e. not a ghost row)
   const existing = await prisma.user.findFirst({ where: { email } });
-  if (existing)
+  if (existing) {
+    if (existing.googleId) {
+      throw Conflict(
+        "This email is linked to a Google account. Please sign in with Google."
+      );
+    }
     throw Conflict(
       "An account with this email already exists. Please log in instead."
     );
+  }
 
   // Password complexity (same as registerSchool)
   const pw = input.password;
@@ -86,12 +93,10 @@ export async function createSchoolForUser(
   if (existing)
     throw Conflict("That school code is already taken. Please choose a different code.");
 
-  const hashed = await bcrypt.hash(await generateTempPassword(), 12); // not used — user already has their own password
-  // We need the user's actual password hash to create them in the new school
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw BadRequest("User not found.");
 
-  // Create the school and add user as admin
+    // Create the school (no users nested — we'll link the existing user below)
   const school = await prisma.school.create({
     data: {
       name: input.name,
@@ -107,48 +112,40 @@ export async function createSchoolForUser(
           features: JSON.stringify(DEFAULT_FEATURES),
         },
       },
-      users: {
-        create: {
-          name: user.name,
-          email: user.email,
-          password: user.password, // reuse existing password hash
-          role: "ADMIN",
-        },
-      },
     },
-    include: { users: { where: { email: user.email } } },
   });
 
   await provisionClasses(school.id);
 
-  // If user has no school yet, update their primary record
-  if (!user.schoolId) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { schoolId: school.id },
-    });
-  }
+  // Link the existing user to the new school (never create a duplicate User row)
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: { schoolId: school.id },
+  });
 
-  // Issue a new token scoped to the new school
-  const newUser = school.users[0];
   const token = signToken({
-    sub: newUser.id,
-    role: newUser.role,
-    email: newUser.email,
+    sub: updatedUser.id,
+    role: updatedUser.role,
+    email: updatedUser.email,
     schoolId: school.id,
   });
 
   return {
     token,
+    user: {
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      schoolId: school.id,
+      school: { id: school.id, slug: school.slug, name: school.name },
+    },
     school: { id: school.id, slug: school.slug, name: school.name },
     message: "School created successfully.",
   };
 }
 
-async function generateTempPassword() {
-  const { randomBytes } = await import("crypto");
-  return randomBytes(16).toString("hex");
-}
+
 
 // ─────────────────────────────────────────────────────────────
 // SWITCH SCHOOL — re-issue token for a different school context
