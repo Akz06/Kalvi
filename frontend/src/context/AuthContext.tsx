@@ -49,9 +49,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await api.get("/auth/me");
       setUser(res.data.user);
-    } catch {
-      localStorage.removeItem("token");
-      setUser(null);
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      // 401 = invalid/expired token → clear it
+      // Any other error (network, 500) = keep the token, don't log the user out
+      if (status === 401) {
+        localStorage.removeItem("token");
+        setUser(null);
+      }
+      // If /auth/me fails for any other reason (backend down, 500), we still
+      // have the token. Try to decode the user from the JWT payload so the
+      // app can at least render the correct route guards.
+      else {
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          setUser({
+            id: payload.sub ?? payload.id ?? "",
+            name: payload.name ?? "",
+            email: payload.email ?? "",
+            role: payload.role ?? "ADMIN",
+            schoolId: payload.schoolId ?? null,
+          });
+        } catch {
+          // JWT unparseable — clear it
+          localStorage.removeItem("token");
+          setUser(null);
+        }
+      }
     } finally {
       setLoading(false);
     }

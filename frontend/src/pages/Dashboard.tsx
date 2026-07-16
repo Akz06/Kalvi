@@ -235,7 +235,13 @@ export default function Dashboard() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-10 h-10 text-slate-300">
         <circle cx="12" cy="12" r="9"/><path strokeLinecap="round" d="M12 8v4M12 16h.01"/>
       </svg>
-      <p className="text-sm">Could not load dashboard. Please refresh.</p>
+      <p className="text-sm font-medium text-slate-500">Could not load dashboard stats.</p>
+      <button
+        onClick={() => { setError(false); api.get("/dashboard/stats").then(r => setStats(r.data)).catch(() => setError(true)); }}
+        className="mt-2 px-4 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+      >
+        Retry
+      </button>
     </div>
   );
 

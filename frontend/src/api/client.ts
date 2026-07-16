@@ -28,13 +28,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Track if we already redirected to avoid loops
+let redirectingToLogin = false;
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 && !location.pathname.includes("login")) {
+    const status = err.response?.status;
+    const path = location.pathname;
+
+    // Only force-logout on 401 from protected app routes (not public pages or auth routes)
+    // This prevents background requests on public pages from wiping the session.
+    const isProtectedRoute = path.startsWith("/app") || path.startsWith("/create-school");
+    const isAuthRoute = path.startsWith("/login") || path.startsWith("/signup") || path.startsWith("/auth");
+
+    if (status === 401 && isProtectedRoute && !isAuthRoute && !redirectingToLogin) {
+      redirectingToLogin = true;
       localStorage.removeItem("token");
       location.href = "/login";
     }
+
     return Promise.reject(err);
   }
 );
