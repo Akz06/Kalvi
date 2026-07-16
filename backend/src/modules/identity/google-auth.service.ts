@@ -89,22 +89,26 @@ async function resolveGoogleUser(payload: { sub: string; email: string; name: st
     };
   }
 
+  // Filter to users who actually belong to a school (exclude null-school signup-only rows)
+  const schoolUsers = existingUsers.filter((u) => u.schoolId !== null && u.school !== null);
+
   // ── 3b. Multiple schools → return school picker list ───────────────────
-  if (existingUsers.length > 1) {
+  if (schoolUsers.length > 1) {
     return {
       requiresSchoolSelection: true,
-      schools: existingUsers.map((u) => ({
+      schools: schoolUsers.map((u) => ({
         id: u.schoolId,
         slug: u.school?.slug ?? "",
         name: u.school?.name ?? "",
       })),
-      // Pass email + googleId so the picker can re-issue a scoped token
+      // Pass email so the picker can re-issue a scoped token
       _email: email,
     };
   }
 
   // ── 3c. Single user — log in directly ──────────────────────────────────
-  const user = existingUsers[0];
+  // If they have exactly 1 school, use that user row; otherwise use the null-school row
+  const user = schoolUsers.length === 1 ? schoolUsers[0] : existingUsers[0];
 
   if (!user.active) {
     throw Unauthorized(

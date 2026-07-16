@@ -281,11 +281,14 @@ export async function login(input: {
 
   if (users.length === 0) throw Unauthorized(BAD_CREDENTIALS);
 
+  // Filter out null-school rows (users who signed up but haven't created a school yet)
+  const schoolUsers = users.filter((u) => u.schoolId !== null && u.school !== null);
+
   // Multiple schools — return them so the client can show a picker
-  if (users.length > 1) {
+  if (schoolUsers.length > 1) {
     return {
       requiresSchoolSelection: true,
-      schools: users.map((u) => ({
+      schools: schoolUsers.map((u) => ({
         id: u.schoolId,
         slug: u.school?.slug ?? "",
         name: u.school?.name ?? "",
@@ -293,7 +296,9 @@ export async function login(input: {
     } as any;
   }
 
-  const user = users[0];
+  // If we only have null-school users (no school created yet), pick the null-school user
+  const user = schoolUsers.length === 1 ? schoolUsers[0] : users[0];
+
   if (!user.active)
     throw Unauthorized(
       "This account has been deactivated. Please contact your school administrator."
