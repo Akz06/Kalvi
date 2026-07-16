@@ -21,6 +21,7 @@ import {
   parentPortalRouter,
 } from "./modules/parent/parent.routes.js";
 import paymentRoutes from "./modules/payments/payments.routes.js";
+import timetableRoutes from "./modules/timetable/timetable.routes.js";
 
 const isTest = env.NODE_ENV === "test";
 
@@ -136,6 +137,7 @@ export function createApp() {
   app.use("/api/guardians", guardianRouter);
   app.use("/api/parent/portal", parentPortalRouter);
   app.use("/api/payments", paymentRoutes);
+  app.use("/api/timetable", timetableRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

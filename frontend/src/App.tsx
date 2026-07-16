@@ -32,6 +32,8 @@ import AcademicYears from "./pages/AcademicYears";
 import Settings from "./pages/Settings";
 import Guardians from "./pages/Guardians";
 import PaymentSettings from "./pages/PaymentSettings";
+import TimetablePage from "./pages/Timetable";
+import TeacherDashboard from "./pages/TeacherDashboard";
 
 // Parent portal pages
 import ParentLogin from "./pages/parent/ParentLogin";
@@ -112,6 +114,8 @@ export default function App() {
           <Route path="guardians" element={<Guardians />} />
           <Route path="payment-settings" element={<PaymentSettings />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="timetable" element={<TimetablePage />} />
+          <Route path="teacher-dashboard" element={<TeacherDashboard />} />
         </Route>
 
         {/* ── Parent Portal routes ─────────────────────────── */}

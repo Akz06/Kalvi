@@ -22,6 +22,8 @@ import {
   ChevronUpIcon,
   UserIcon,
   CheckIcon,
+  CalendarIcon,
+  ClockIcon,
 } from "./icons";
 
 interface LinkDef {
@@ -71,6 +73,13 @@ const NAV: LinkGroup[] = [
     group: "Portal",
     links: [
       { to: "/app/guardians", label: "Guardians", icon: GuardiansIcon, feature: "parentPortal" },
+    ],
+  },
+  {
+    group: "Schedule",
+    links: [
+      { to: "/app/timetable",          label: "Timetable",         icon: CalendarIcon },
+      { to: "/app/teacher-dashboard",  label: "Teacher Dashboard", icon: ClockIcon },
     ],
   },
   {

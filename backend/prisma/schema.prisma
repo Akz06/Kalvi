@@ -102,6 +102,12 @@ model School {
   academicYears        AcademicYear[]
   enrollments          Enrollment[]
   guardians            Guardian[]
+  subjects             Subject[]
+  designations         Designation[]
+  staffSubjects        StaffSubject[]
+  timetables           Timetable[]
+  timetablePeriods     TimetablePeriod[]
+  periodExchanges      PeriodExchange[]
 }
 
 model SchoolSettings {
@@ -239,6 +245,7 @@ model Section {
 
   students    Student[]
   enrollments Enrollment[]
+  timetables  Timetable[]
   createdAt   DateTime @default(now())
 
   @@unique([classId, name])
@@ -296,7 +303,11 @@ model Staff {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  sectionsMentor Section[]
+  sectionsMentor   Section[]
+  staffSubjects    StaffSubject[]
+  timetablePeriods TimetablePeriod[]
+  originalPeriods  PeriodExchange[]  @relation("OriginalStaff")
+  substitutePeriods PeriodExchange[] @relation("SubstituteStaff")
 
   @@unique([schoolId, employeeNo])
   @@unique([schoolId, email])
@@ -497,6 +508,7 @@ model AcademicYear {
   enrollments Enrollment[]
   exams       Exam[]
   fees        FeeRecord[]
+  timetables  Timetable[]
 
   @@unique([schoolId, name])
   @@index([schoolId])
@@ -523,6 +535,129 @@ model Enrollment {
 }
 
 // ─────────────────────────────────────────────────────────────
+// SUBJECTS & DESIGNATIONS
+// ─────────────────────────────────────────────────────────────
+
+model Subject {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name      String
+  code      String
+  classIds  String   @default("[]")  // JSON array of SchoolClass ids
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  staffSubjects    StaffSubject[]
+  timetablePeriods TimetablePeriod[]
+  exams            Exam[]
+
+  @@unique([schoolId, code])
+  @@index([schoolId])
+}
+
+model Designation {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([schoolId, name])
+  @@index([schoolId])
+}
+
+model StaffSubject {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([staffId, subjectId])
+  @@index([schoolId])
+  @@index([staffId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// TIMETABLE
+// ─────────────────────────────────────────────────────────────
+
+model Timetable {
+  id             String        @id @default(cuid())
+  schoolId       String
+  school         School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  sectionId      String
+  section        Section       @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  name           String        @default("Weekly Timetable")
+  active         Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  periods TimetablePeriod[]
+
+  @@unique([sectionId, academicYearId])
+  @@index([schoolId])
+  @@index([sectionId])
+}
+
+model TimetablePeriod {
+  id          String    @id @default(cuid())
+  schoolId    String
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  timetableId String
+  timetable   Timetable @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int       // 1=Mon … 6=Sat
+  periodNo    Int       // 1-based
+  startTime   String    // "09:00"
+  endTime     String    // "09:45"
+  subjectId   String?
+  subject     Subject?  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  staffId     String?
+  staff       Staff?    @relation(fields: [staffId], references: [id], onDelete: SetNull)
+  isBreak     Boolean   @default(false)
+  label       String?   // "Lunch Break", "Assembly" etc
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  exchanges PeriodExchange[]
+
+  @@unique([timetableId, dayOfWeek, periodNo])
+  @@index([schoolId])
+  @@index([timetableId])
+  @@index([staffId])
+}
+
+model PeriodExchange {
+  id              String          @id @default(cuid())
+  schoolId        String
+  school          School          @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  periodId        String
+  period          TimetablePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  exchangeDate    DateTime        @db.Date
+  originalStaffId String
+  originalStaff   Staff           @relation("OriginalStaff", fields: [originalStaffId], references: [id], onDelete: Cascade)
+  substituteId    String
+  substitute      Staff           @relation("SubstituteStaff", fields: [substituteId], references: [id], onDelete: Cascade)
+  reason          String?
+  status          String          @default("PENDING") // PENDING|APPROVED|REJECTED
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([schoolId])
+  @@index([periodId])
+  @@index([originalStaffId])
+  @@index([substituteId])
+}
+
+// ─────────────────────────────────────────────────────────────
 // EXAMS & RESULTS
 // ─────────────────────────────────────────────────────────────
 
@@ -536,6 +671,8 @@ model Exam {
   academicYearId String?
   academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
   subject        String
+  subjectId      String?
+  subjectRef     Subject?     @relation(fields: [subjectId], references: [id], onDelete: SetNull)
   maxMarks       Float        @default(100)
   examDate       DateTime
   createdAt      DateTime     @default(now())
