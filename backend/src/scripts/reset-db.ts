@@ -9,7 +9,11 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🗑  Wiping all application data...");
+  if (process.env.ALLOW_DB_RESET !== "true") {
+    throw new Error("DB reset is disabled. Set ALLOW_DB_RESET=true temporarily to run this script.");
+  }
+
+  console.log("Wiping all application data...");
 
   // Order matters — most cascading happens automatically via FK cascade,
   // but we explicitly delete from the top of the tree.
@@ -44,7 +48,7 @@ async function main() {
   await run("School",               prisma.school.deleteMany());
 
   steps.forEach(({ name, count }) => console.log(`  ✓ ${name}: ${count} deleted`));
-  console.log("✅ All data wiped. Database is clean.");
+  console.log("All data wiped. Database is clean.");
 }
 
 main()

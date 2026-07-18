@@ -33,10 +33,19 @@ export default function GoogleCallback() {
 
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
+    const state = params.get("state");
+    const expectedState = sessionStorage.getItem("kalvi_google_oauth_state");
     const oauthError = params.get("error");
+
+    sessionStorage.removeItem("kalvi_google_oauth_state");
 
     if (oauthError || !code) {
       setError(oauthError === "access_denied" ? "Google sign-in was cancelled." : "Google sign-in failed. Please try again.");
+      return;
+    }
+
+    if (!state || !expectedState || state !== expectedState) {
+      setError("Google sign-in could not be verified. Please try again.");
       return;
     }
 

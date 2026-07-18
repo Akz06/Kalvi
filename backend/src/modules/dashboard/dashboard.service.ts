@@ -6,10 +6,13 @@ export async function getStats(schoolId: string) {
   const dayUTC = new Date(
     Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
   );
+  const nextDayUTC = new Date(dayUTC);
+  nextDayUTC.setUTCDate(nextDayUTC.getUTCDate() + 1);
 
   // ── yesterday for attendance trend ──────────────────────────
   const yesterdayUTC = new Date(dayUTC);
   yesterdayUTC.setUTCDate(yesterdayUTC.getUTCDate() - 1);
+  const yesterdayEndUTC = new Date(dayUTC);
 
   // ── last 7 days for attendance sparkline ────────────────────
   const sevenDaysAgo = new Date(dayUTC);
@@ -17,7 +20,7 @@ export async function getStats(schoolId: string) {
 
   // ── current month boundaries ─────────────────────────────────
   const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
-  const monthEnd = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0));
+  const nextMonthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1));
 
   const [
     students,
@@ -35,64 +38,52 @@ export async function getStats(schoolId: string) {
     upcomingExams,
     absentToday,
   ] = await Promise.all([
-    // total active students
     prisma.student.count({ where: { schoolId, active: true } }),
 
-    // new admissions this month
     prisma.student.count({
       where: {
         schoolId,
         active: true,
-        createdAt: { gte: monthStart },
+        createdAt: { gte: monthStart, lt: nextMonthStart },
       },
     }),
 
-    // active staff
     prisma.staff.count({ where: { schoolId, active: true } }),
-
-    // classes & sections
     prisma.schoolClass.count({ where: { schoolId } }),
     prisma.section.count({ where: { schoolId } }),
 
-    // outstanding fees
     prisma.feeRecord.aggregate({
       where: { schoolId, status: { in: ["PENDING", "PARTIAL"] } },
       _sum: { amount: true, amountPaid: true },
     }),
 
-    // fee collected this month
     prisma.feePayment.aggregate({
       where: {
         schoolId,
-        paidAt: { gte: monthStart, lte: monthEnd },
+        paidAt: { gte: monthStart, lt: nextMonthStart },
       },
       _sum: { amount: true },
     }),
 
-    // exam count
     prisma.exam.count({ where: { schoolId } }),
 
-    // today attendance
     prisma.attendance.count({
-      where: { schoolId, date: dayUTC, status: "PRESENT" },
+      where: { schoolId, date: { gte: dayUTC, lt: nextDayUTC }, status: "PRESENT" },
     }),
 
-    // yesterday attendance
     prisma.attendance.count({
-      where: { schoolId, date: yesterdayUTC, status: "PRESENT" },
+      where: { schoolId, date: { gte: yesterdayUTC, lt: yesterdayEndUTC }, status: "PRESENT" },
     }),
 
-    // last 7 days attendance (for sparkline)
     prisma.attendance.groupBy({
       by: ["date", "status"],
       where: {
         schoolId,
-        date: { gte: sevenDaysAgo, lte: dayUTC },
+        date: { gte: sevenDaysAgo, lt: nextDayUTC },
       },
       _count: { status: true },
     }),
 
-    // 5 most recent payments
     prisma.feePayment.findMany({
       where: { schoolId },
       orderBy: { paidAt: "desc" },
@@ -106,7 +97,6 @@ export async function getStats(schoolId: string) {
       },
     }),
 
-    // next 5 upcoming exams
     prisma.exam.findMany({
       where: {
         schoolId,
@@ -119,15 +109,13 @@ export async function getStats(schoolId: string) {
       },
     }),
 
-    // absent today
     prisma.attendance.count({
-      where: { schoolId, date: dayUTC, status: "ABSENT" },
+      where: { schoolId, date: { gte: dayUTC, lt: nextDayUTC }, status: "ABSENT" },
     }),
   ]);
 
   const dueMinor = (pendingFees._sum.amount ?? 0) - (pendingFees._sum.amountPaid ?? 0);
 
-  // Build 7-day sparkline [{date, present, absent}]
   const sparkMap = new Map<string, { present: number; absent: number }>();
   weekAttendance.forEach((row) => {
     const key = row.date.toISOString().split("T")[0];
@@ -136,6 +124,7 @@ export async function getStats(schoolId: string) {
     if (row.status === "PRESENT") entry.present += row._count.status;
     if (row.status === "ABSENT") entry.absent += row._count.status;
   });
+
   const attendanceSparkline = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(sevenDaysAgo);
     d.setUTCDate(d.getUTCDate() + i);
@@ -143,7 +132,6 @@ export async function getStats(schoolId: string) {
     return { date: key, ...(sparkMap.get(key) ?? { present: 0, absent: 0 }) };
   });
 
-  // Attendance trend vs yesterday
   const attendanceTrend = presentYesterday > 0
     ? Math.round(((presentToday - presentYesterday) / presentYesterday) * 100)
     : 0;

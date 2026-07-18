@@ -1,7 +1,16 @@
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 const REDIRECT_URI = `${window.location.origin}/auth/google/callback`;
 
+function createOAuthState() {
+  const bytes = new Uint8Array(16);
+  window.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 function buildGoogleOAuthURL() {
+  const state = createOAuthState();
+  sessionStorage.setItem("kalvi_google_oauth_state", state);
+
   const params = new URLSearchParams({
     client_id: CLIENT_ID!,
     redirect_uri: REDIRECT_URI,
@@ -9,6 +18,7 @@ function buildGoogleOAuthURL() {
     scope: "openid email profile",
     access_type: "offline",
     prompt: "select_account",
+    state,
   });
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
