@@ -367,7 +367,7 @@ export function ReceiptPDF({
         <View style={s.header}>
           <View style={{ flexDirection: "row", alignItems: "flex-start", flex: 1 }}>
             <View style={s.logoBox}>
-              <Text style={s.logoText}>🎓</Text>
+              <Text style={s.logoText}>K</Text>
             </View>
             <View style={s.schoolBlock}>
               <Text style={s.schoolName}>{school.name}</Text>

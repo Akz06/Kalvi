@@ -2,7 +2,7 @@ import axios from "axios";
 
 // In production (Railway), VITE_API_URL is the full backend URL
 // e.g. https://kalvi-backend-production.up.railway.app
-// In development, Vite's proxy forwards /api → localhost:4000
+// In development, Vite's proxy forwards /api to localhost:4000
 function buildBase(): string {
   const raw = import.meta.env.VITE_API_URL as string | undefined;
   if (!raw) return "/api";

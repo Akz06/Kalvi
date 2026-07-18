@@ -456,7 +456,7 @@ function ExchangePanel({ schoolId, staffList, timetablePeriods, onClose }: {
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
                     <span className="font-medium">{ex.originalStaff.firstName} {ex.originalStaff.lastName}</span>
-                    <span className="mx-1 text-slate-300">→</span>
+                    <span className="mx-1 text-slate-300">to</span>
                     <span className="font-medium text-indigo-600">{ex.substitute.firstName} {ex.substitute.lastName}</span>
                   </p>
                   {ex.reason && <p className="text-xs text-slate-400 mt-0.5 italic">"{ex.reason}"</p>}

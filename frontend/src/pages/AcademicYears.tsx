@@ -84,10 +84,10 @@ export default function AcademicYears() {
       <div className="flex gap-1 mb-6 border-b border-slate-200">
         {(
           [
-            { id: "years", label: "📅 Years" },
-            { id: "enroll", label: "✏️ Enroll Students" },
-            { id: "promote", label: "⬆️ Promote / Transfer" },
-            { id: "history", label: "📋 Enrollment History" },
+            { id: "years", label: "Years" },
+            { id: "enroll", label: "Enroll Students" },
+            { id: "promote", label: "Promote / Transfer" },
+            { id: "history", label: "Enrollment History" },
           ] as { id: Tab; label: string }[]
         ).map((t) => (
           <button

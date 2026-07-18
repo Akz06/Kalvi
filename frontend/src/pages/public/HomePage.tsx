@@ -1,34 +1,34 @@
 import { Link } from "react-router-dom";
-import { CheckIcon, ArrowRightIcon } from "../../components/icons";
+import { CheckIcon, ArrowRightIcon, SchoolIcon, StudentsIcon, AttendanceIcon, FeesIcon, ExamsIcon, AcademicYearIcon, GuardiansIcon, SettingsIcon, TrendUpIcon, LockIcon, GlobeIcon } from "../../components/icons";
 
 const FEATURES = [
   {
-    icon: "👨‍🎓",
+    Icon: StudentsIcon,
     title: "Student Management",
     desc: "Admissions, profiles, academic history, guardian contacts — all in one place.",
   },
   {
-    icon: "📅",
+    Icon: AttendanceIcon,
     title: "Attendance",
     desc: "Daily attendance per section, absence alerts, and percentage tracking.",
   },
   {
-    icon: "💰",
+    Icon: FeesIcon,
     title: "Fee Management",
     desc: "Class-specific fee heads, multi-head invoicing, payment ledger, and receipts.",
   },
   {
-    icon: "📝",
+    Icon: ExamsIcon,
     title: "Exams & Report Cards",
     desc: "Create exams, record marks, auto-compute grades, and print PDF report cards.",
   },
   {
-    icon: "🗓",
+    Icon: AcademicYearIcon,
     title: "Academic Years",
     desc: "Year management, student enrollment, and end-of-year promotion workflows.",
   },
   {
-    icon: "👨‍👩‍👧",
+    Icon: GuardiansIcon,
     title: "Parent Portal",
     desc: "Parents get a dedicated login to view attendance, fees, and exam results.",
   },
@@ -51,7 +51,7 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🎓</span>
+            <SchoolIcon className="w-7 h-7 text-brand-700" />
             <span className="text-xl font-bold text-brand-800">Kalvi</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
@@ -86,7 +86,7 @@ export default function HomePage() {
 
         <div className="relative max-w-7xl mx-auto px-6 py-28 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-6 animate-fade-in">
-            <span className="text-yellow-300">✦</span>
+            <CheckIcon className="w-4 h-4 text-yellow-300" />
             Any school · Fully configurable · CBSE · State Board · ICSE · IB
           </div>
 
@@ -105,7 +105,7 @@ export default function HomePage() {
               to="/register"
               className="bg-white text-brand-800 font-bold px-8 py-3.5 rounded-xl text-base hover:bg-brand-50 transition shadow-lg"
             >
-              🏫 Register Your School — Free
+              <SchoolIcon className="w-5 h-5 inline mr-2" />Register Your School — Free
             </Link>
             <Link
               to="/login"
@@ -166,7 +166,7 @@ export default function HomePage() {
                 key={f.title}
                 className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-md hover:-translate-y-1 transition-all"
               >
-                <div className="text-4xl mb-4">{f.icon}</div>
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-700"><f.Icon className="w-7 h-7" /></div>
                 <h3 className="text-lg font-semibold text-slate-800">{f.title}</h3>
                 <p className="text-slate-500 text-sm mt-1 leading-relaxed">{f.desc}</p>
               </div>
@@ -227,7 +227,7 @@ export default function HomePage() {
           {/* Mock config card */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-2">
-              ⚙️ School Preferences — Example Setup
+              <SettingsIcon className="w-4 h-4 inline mr-1" />School Preferences — Example Setup
             </h3>
             {[
               ["Board", "CBSE"],
@@ -275,12 +275,12 @@ export default function HomePage() {
             </p>
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
               {[
-                { icon: "⚡", title: "Up in minutes", desc: "Register, configure your classes, and start adding students in one sitting. No installation, no IT help needed." },
-                { icon: "🔒", title: "Your data is yours", desc: "Each school is fully isolated. No other school can ever see your students, fees, or records." },
-                { icon: "📱", title: "Works on any device", desc: "Runs in any modern browser — desktop, tablet, or phone. No app to download." },
+                { Icon: TrendUpIcon, title: "Up in minutes", desc: "Register, configure your classes, and start adding students in one sitting. No installation, no IT help needed." },
+                { Icon: LockIcon, title: "Your data is yours", desc: "Each school is fully isolated. No other school can ever see your students, fees, or records." },
+                { Icon: GlobeIcon, title: "Works on any device", desc: "Runs in any modern browser — desktop, tablet, or phone. No app to download." },
               ].map((item) => (
                 <div key={item.title} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <div className="text-3xl mb-3">{item.icon}</div>
+                  <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700"><item.Icon className="w-6 h-6" /></div>
                   <h3 className="font-semibold text-slate-800 mb-1">{item.title}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
                 </div>
@@ -304,7 +304,7 @@ export default function HomePage() {
               to="/register"
               className="bg-white text-brand-800 font-bold px-8 py-3.5 rounded-xl hover:bg-brand-50 transition shadow-lg"
             >
-              🏫 Register Your School
+              <SchoolIcon className="w-5 h-5 inline mr-2" />Register Your School
             </Link>
             <Link
               to="/pricing"
@@ -321,7 +321,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">🎓</span>
+              <SchoolIcon className="w-5 h-5 text-white" />
               <span className="text-white font-bold text-base">Kalvi</span>
             </div>
             <p className="text-slate-500 leading-relaxed text-xs">

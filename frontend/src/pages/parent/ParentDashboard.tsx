@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useParentAuth } from "../../context/ParentAuthContext";
 import { parentApi } from "../../api/parentClient";
 import { Spinner } from "../../components/ui";
+import type { ReactNode } from "react";
+import { AttendanceIcon, ErrorIcon, ExamsIcon, FeesIcon, ArrowRightIcon, CheckCircleIcon } from "../../components/icons";
 
 interface AttendanceSummary {
   summary: Record<string, number>;
@@ -87,21 +89,21 @@ export default function ParentDashboard() {
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          icon="📅"
+          icon={<AttendanceIcon className="w-6 h-6" />}
           label="Attendance"
           value={`${attendance?.attendancePercentage ?? 0}%`}
           sub={`${attendance?.summary.PRESENT ?? 0} days present`}
           color="blue"
         />
         <StatCard
-          icon="❌"
+          icon={<ErrorIcon className="w-6 h-6" />}
           label="Absences"
           value={String(attendance?.summary.ABSENT ?? 0)}
           sub="total absent days"
           color="red"
         />
         <StatCard
-          icon="📝"
+          icon={<ExamsIcon className="w-6 h-6" />}
           label="Overall Grade"
           value={exams?.summary.overallGrade ?? "—"}
           sub={
@@ -112,7 +114,7 @@ export default function ParentDashboard() {
           color="purple"
         />
         <StatCard
-          icon="💰"
+          icon={<FeesIcon className="w-6 h-6" />}
           label="Fees Due"
           value={totalDue > 0 ? `₹${totalDue.toLocaleString("en-IN")}` : "All Clear"}
           sub={outstanding.length > 0 ? `${outstanding.length} pending invoice(s)` : "No pending fees"}
@@ -127,7 +129,7 @@ export default function ParentDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-700">Recent Attendance</h3>
             <Link to="/parent/attendance" className="text-xs text-emerald-600 hover:underline">
-              View all →
+              View all <ArrowRightIcon className="w-3.5 h-3.5 inline ml-0.5" />
             </Link>
           </div>
           {attendance?.recent.length ? (
@@ -155,7 +157,7 @@ export default function ParentDashboard() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-700">Pending Fees</h3>
             <Link to="/parent/fees" className="text-xs text-emerald-600 hover:underline">
-              View all →
+              View all <ArrowRightIcon className="w-3.5 h-3.5 inline ml-0.5" />
             </Link>
           </div>
           {outstanding.length ? (
@@ -189,7 +191,7 @@ export default function ParentDashboard() {
               ))}
             </div>
           ) : (
-            <p className="text-slate-400 text-sm">🎉 All fees are paid. Great job!</p>
+            <p className="text-slate-400 text-sm flex items-center gap-1.5"><CheckCircleIcon className="w-4 h-4 text-emerald-500" /> All fees are paid. Great job!</p>
           )}
         </div>
       </div>
@@ -214,7 +216,7 @@ function StatCard({
   sub,
   color = "blue",
 }: {
-  icon: string;
+  icon: ReactNode;
   label: string;
   value: string;
   sub: string;

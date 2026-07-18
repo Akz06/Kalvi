@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { parentApi } from "../../api/parentClient";
 import { Spinner } from "../../components/ui";
+import { AttendanceIcon, WarningIcon } from "../../components/icons";
 
 interface AttendanceRecord {
   date: string;
@@ -31,7 +32,7 @@ export default function ParentAttendance() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-slate-800">📅 Attendance</h2>
+      <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2"><AttendanceIcon className="w-6 h-6 text-blue-600" /> Attendance</h2>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -66,8 +67,8 @@ export default function ParentAttendance() {
           />
         </div>
         {pct < 75 && (
-          <p className="text-xs text-red-500 mt-2">
-            ⚠️ Attendance is below 75%. Please contact the school.
+          <p className="text-xs text-red-500 mt-2 flex items-center gap-1.5">
+            <WarningIcon className="w-3.5 h-3.5" /> Attendance is below 75%. Please contact the school.
           </p>
         )}
       </div>

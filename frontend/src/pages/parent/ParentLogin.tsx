@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useParentAuth } from "../../context/ParentAuthContext";
 import { parseApiError } from "../../api/client";
 import { FormError, FieldHint } from "../../components/ui";
+import { GuardiansIcon } from "../../components/icons";
 
 export default function ParentLogin() {
   const { login } = useParentAuth();
@@ -34,7 +35,7 @@ export default function ParentLogin() {
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">👨‍👩‍👧</div>
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700"><GuardiansIcon className="w-8 h-8" /></div>
           <h1 className="text-2xl font-bold text-slate-800">Parent Portal</h1>
           <p className="text-slate-500 text-sm mt-1">
             Sign in to view your child's progress

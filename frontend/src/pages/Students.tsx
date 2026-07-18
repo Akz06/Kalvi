@@ -9,7 +9,7 @@ import {
   FieldHint,
 } from "../components/ui";
 import { formatDate } from "../lib/format";
-import { ArrowRightIcon, ChevronRightIcon } from "../components/icons";
+import { ArrowRightIcon, ChevronRightIcon, WarningIcon, CheckCircleIcon } from "../components/icons";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface SectionOpt {
@@ -78,8 +78,8 @@ export default function Students() {
       <div className="flex gap-1 mb-5 border-b border-slate-200">
         {(
           [
-            { id: "current", label: "🎓 Current Students" },
-            { id: "previous", label: "📂 Last Year Students" },
+            { id: "current", label: "Current Students" },
+            { id: "previous", label: "Last Year Students" },
           ] as { id: Tab; label: string }[]
         ).map((t) => (
           <button
@@ -445,7 +445,7 @@ function PreviousYearStudentsTab() {
 
       {noYears ? (
         <div className="card p-6 text-center text-slate-500 text-sm">
-          <p className="text-2xl mb-2">📂</p>
+          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><ArrowRightIcon className="w-5 h-5" /></div>
           <p className="font-medium text-slate-700 mb-1">No previous academic years found.</p>
           <p>
             Create and activate a new academic year in{" "}
@@ -583,7 +583,7 @@ function PreviousYearStudentsTab() {
 
             {activeYears.length === 0 ? (
               <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
-                ⚠️ There is no active academic year. Please activate a year in{" "}
+                <WarningIcon className="w-3.5 h-3.5 inline mr-1" /> There is no active academic year. Please activate a year in{" "}
                 <span className="font-medium">Academic Years</span> before re-enrolling.
               </p>
             ) : (
@@ -631,7 +631,7 @@ function PreviousYearStudentsTab() {
                 )}
                 {reEnrollSuccess && (
                   <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded p-3">
-                    ✅ {reEnrollSuccess}
+                    <CheckCircleIcon className="w-3.5 h-3.5 inline mr-1" /> {reEnrollSuccess}
                   </p>
                 )}
               </>

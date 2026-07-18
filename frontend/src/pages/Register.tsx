@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { parseApiError, type ApiFieldIssue } from "../api/client";
 import { publicApi } from "../lib/publicApi";
 import { useAuth } from "../context/AuthContext";
-import { ArrowRightIcon, ArrowLeftIcon } from "../components/icons";
+import { ArrowRightIcon, ArrowLeftIcon, SchoolIcon } from "../components/icons";
 import { FormError, FieldHint } from "../components/ui";
 
 export default function Register() {
@@ -69,7 +69,7 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-700 to-brand-800 p-4">
       <div className="card w-full max-w-2xl p-8">
         <div className="text-center mb-6">
-          <div className="text-4xl">🏫</div>
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><SchoolIcon className="w-8 h-8" /></div>
           <h1 className="text-2xl font-bold mt-2">Register Your School</h1>
           <p className="text-sm text-slate-500">
             Set up your school in under 2 minutes

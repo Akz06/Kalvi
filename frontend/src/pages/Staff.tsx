@@ -171,7 +171,7 @@ export default function Staff() {
     setOpen(true);
   }
 
-  // Resolve subject name or id → name for storing
+  // Resolve subject name or id to name for storing
   function resolveSubjectName(val: string): string {
     const sub = subjects.find((s) => s.id === val || s.name === val);
     return sub ? sub.name : val;

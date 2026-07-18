@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { api, parseApiError } from "../api/client";
 import { PageHeader, Spinner, FormError } from "../components/ui";
 import { useConfig } from "../context/ConfigContext";
-import { CashIcon, CardIcon, UpiIcon, BankIcon, ChequeIcon, GlobeIcon, CheckIcon, WebhookIcon, KeyIcon, EyeIcon, EyeOffIcon, CopyIcon, InfoIcon } from "../components/icons";
+import { CashIcon, CardIcon, UpiIcon, BankIcon, ChequeIcon, GlobeIcon, CheckIcon, WebhookIcon, KeyIcon, EyeIcon, EyeOffIcon, CopyIcon, InfoIcon, SchoolIcon, WarningIcon, ErrorIcon } from "../components/icons";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -222,7 +222,7 @@ export default function PaymentSettings() {
             : "bg-amber-50 border border-amber-200 text-amber-800"
         }`}
       >
-        <span className="text-xl">{cfg.active ? "✅" : "⚠️"}</span>
+        {cfg.active ? <CheckIcon className="w-5 h-5" /> : <WarningIcon className="w-5 h-5" />}
         <div>
           {cfg.active ? (
             <>
@@ -347,13 +347,13 @@ export default function PaymentSettings() {
                         }
                         className="sr-only"
                       />
-                      {m === "TEST" ? "🧪 Test Mode" : "🚀 Live Mode"}
+                      {m === "TEST" ? "Test Mode" : "Live Mode"}
                     </label>
                   ))}
                 </div>
                 {cfg.mode === "LIVE" && (
                   <p className="text-xs text-amber-600 mt-2 font-medium">
-                    ⚠️ Live mode — real transactions will be processed. Make
+                    <WarningIcon className="w-3.5 h-3.5 inline mr-1" /> Live mode — real transactions will be processed. Make
                     sure your credentials are correct before saving.
                   </p>
                 )}
@@ -369,7 +369,7 @@ export default function PaymentSettings() {
                   disabled={testing}
                   className="btn-ghost text-sm"
                 >
-                  {testing ? "Testing…" : "🔌 Test Gateway Connection"}
+                  {testing ? "Testing…" : "Test Gateway Connection"}
                 </button>
                 {testResult && (
                   <div
@@ -379,7 +379,7 @@ export default function PaymentSettings() {
                         : "bg-red-50 text-red-700"
                     }`}
                   >
-                    {testResult.ok ? "✅ " : "❌ "}
+                    {testResult.ok ? <CheckIcon className="w-3.5 h-3.5 inline mr-1" /> : <ErrorIcon className="w-3.5 h-3.5 inline mr-1" />}
                     {testResult.message}
                   </div>
                 )}
@@ -392,7 +392,7 @@ export default function PaymentSettings() {
         {tab === "Credentials" && (
           <section className="card p-6 space-y-5">
             <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
-              🔒 <strong>Security note:</strong> Credentials are stored
+              <KeyIcon className="w-4 h-4 inline mr-1" /> <strong>Security note:</strong> Credentials are stored
               server-side and never returned. The form fields are
               write-only — paste new values only when you need to update
               them.
@@ -427,7 +427,7 @@ export default function PaymentSettings() {
                   />
                   <p className="text-xs text-slate-400 mt-1">
                     {cfg.provider === "RAZORPAY"
-                      ? "Found in Razorpay Dashboard → Settings → API Keys."
+                      ? "Found in Razorpay Dashboard &gt; Settings &gt; API Keys."
                       : "Your publishable / API key from the gateway dashboard."}
                   </p>
                 </div>
@@ -556,7 +556,7 @@ export default function PaymentSettings() {
                 {cfg.provider === "RAZORPAY" ? (
                   <>
                     <li>Log in to your <a href="https://dashboard.razorpay.com" target="_blank" rel="noreferrer" className="text-primary-600 underline">Razorpay Dashboard</a>.</li>
-                    <li>Go to <strong>Settings → Webhooks</strong>.</li>
+                    <li>Go to <strong>Settings &gt; Webhooks</strong>.</li>
                     <li>Click <strong>Add New Webhook</strong> and paste the URL above.</li>
                     <li>Select the <code>payment.captured</code> event.</li>
                     <li>Set a <strong>Secret</strong> and save the same value in the <em>Webhook Secret</em> field under the <strong>Credentials</strong> tab.</li>
@@ -584,7 +584,7 @@ export default function PaymentSettings() {
         {/* ── Save bar ──────────────────────────────────────── */}
         <div className="flex items-center gap-4 pt-2">
           <button type="submit" disabled={saving} className="btn-primary">
-            {saving ? "Saving…" : "💾 Save Payment Settings"}
+            {saving ? "Saving…" : "Save Payment Settings"}
           </button>
           {msg && (
             <span className="text-sm text-green-600 font-medium">{msg}</span>
@@ -597,17 +597,17 @@ export default function PaymentSettings() {
       {/* ── Info cards ──────────────────────────────────────── */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl">
         <InfoCard
-          icon="🔐"
+          Icon={KeyIcon}
           title="Secure by design"
           body="Secret keys are never returned to the browser. They're stored server-side and only used for server-to-gateway API calls."
         />
         <InfoCard
-          icon="🧪"
+          Icon={InfoIcon}
           title="Always test first"
           body="Use TEST mode with your gateway's test credentials before switching to LIVE. No real money is moved in test mode."
         />
         <InfoCard
-          icon="🏫"
+          Icon={SchoolIcon}
           title="Per-school config"
           body="Each school has its own gateway configuration. One school's keys never affect another school."
         />
@@ -617,17 +617,17 @@ export default function PaymentSettings() {
 }
 
 function InfoCard({
-  icon,
+  Icon,
   title,
   body,
 }: {
-  icon: string;
+  Icon: React.ComponentType<{ className?: string }>;
   title: string;
   body: string;
 }) {
   return (
     <div className="card p-4">
-      <div className="text-2xl mb-2">{icon}</div>
+      <Icon className="w-6 h-6 mb-2 text-brand-600" />
       <div className="font-semibold text-sm text-slate-700 mb-1">{title}</div>
       <div className="text-xs text-slate-500">{body}</div>
     </div>

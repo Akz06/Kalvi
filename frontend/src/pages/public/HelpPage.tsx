@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { SchoolIcon, StudentsIcon, FeesIcon, AttendanceIcon, ExamsIcon, AcademicYearIcon, GuardiansIcon, SettingsIcon, TrendUpIcon, CheckIcon, CloseIcon } from "../../components/icons";
 
 const SECTIONS = [
   {
     slug: "getting-started",
-    icon: "🚀",
+    Icon: TrendUpIcon,
     title: "Getting Started",
     articles: [
       {
@@ -23,7 +24,7 @@ To register your school on Kalvi:
 3. Click **Create School**. The system automatically provisions all classes and sections.
 4. You are logged in immediately as the school admin.
 
-> 💡 **Tip:** The school code cannot be changed later. Choose something short and memorable.
+> **Tip:** The school code cannot be changed later. Choose something short and memorable.
         `,
       },
       {
@@ -46,14 +47,14 @@ Parents have a separate login portal at **/parent/login**.
 2. Enter the **Email** and **Password** the school admin set up for you.
 3. Click **Sign In** to view your child's attendance, fees, and exam results.
 
-> ⚠️ Parent accounts are created by the school admin, not self-registered. Contact your school if you need access.
+> **Note:** Parent accounts are created by the school admin, not self-registered. Contact your school if you need access.
         `,
       },
     ],
   },
   {
     slug: "students",
-    icon: "👨‍🎓",
+    Icon: StudentsIcon,
     title: "Students",
     articles: [
       {
@@ -82,7 +83,7 @@ Students from previous academic years are available under the **📂 Last Year S
   },
   {
     slug: "fees",
-    icon: "💰",
+    Icon: FeesIcon,
     title: "Fee Management",
     articles: [
       {
@@ -90,7 +91,7 @@ Students from previous academic years are available under the **📂 Last Year S
         content: `
 Fee heads (categories like "Tuition Fee", "Transport Fee") are configured per class so that each class can have different amounts.
 
-1. Go to **Preferences** → **Fee Configuration**.
+1. Go to **Preferences** > **Fee Configuration**.
 2. Select a **Class** from the dropdown.
 3. Click **+ Add Fee Head**, enter a name and default amount.
 4. Click **Save** on each row.
@@ -101,7 +102,7 @@ The default amount is pre-filled when creating a new invoice for a student in th
       {
         title: "Creating a fee invoice",
         content: `
-1. Go to **Fees** → click **+ New Fee**.
+1. Go to **Fees** > click **+ New Fee**.
 2. Select a **Student**. The fee heads for that student's class load automatically.
 3. Add line items using the **+ Add Item** button — each row is a Fee Head + Amount.
 4. Set a **Title** and **Due Date**.
@@ -125,7 +126,7 @@ A unique receipt number is generated automatically. You can download a PDF recei
   },
   {
     slug: "attendance",
-    icon: "📅",
+    Icon: AttendanceIcon,
     title: "Attendance",
     articles: [
       {
@@ -134,7 +135,7 @@ A unique receipt number is generated automatically. You can download a PDF recei
 1. Go to **Attendance** in the sidebar.
 2. Select a **Class** and **Section**, then pick the **Date**.
 3. Use the dropdown for each student to mark: **Present**, **Absent**, **Late**, or **Leave**.
-4. To mark everyone present at once, click **✓ Mark All Present**, then adjust individual records.
+4. To mark everyone present at once, click **Mark All Present**, then adjust individual records.
 5. Click **Save Attendance**.
 
 Attendance is saved per section per day. Re-opening the same section and date loads the saved records for editing.
@@ -144,7 +145,7 @@ Attendance is saved per section per day. Re-opening the same section and date lo
   },
   {
     slug: "exams",
-    icon: "📝",
+    Icon: ExamsIcon,
     title: "Exams & Report Cards",
     articles: [
       {
@@ -172,7 +173,7 @@ The exam appears in the list. Click **Enter Marks** to record results per studen
   },
   {
     slug: "academic-years",
-    icon: "🗓",
+    Icon: AcademicYearIcon,
     title: "Academic Years",
     articles: [
       {
@@ -188,7 +189,7 @@ Only one year can be active at a time. Activating a new year automatically deact
       {
         title: "Promoting students",
         content: `
-1. Go to **Academic Years** → **⬆️ Promote / Transfer** tab.
+1. Go to **Academic Years** > **Promote / Transfer** tab.
 2. Select the **source year** (outgoing) and **destination year** (incoming).
 3. Click **Load Students** to see all enrolled students.
 4. For each student, choose the **action** (Promoted / Transferred / Left) and the destination section.
@@ -201,7 +202,7 @@ The system creates new enrollment records in the destination year and marks the 
   },
   {
     slug: "parent-portal",
-    icon: "👨‍👩‍👧",
+    Icon: GuardiansIcon,
     title: "Parent Portal",
     articles: [
       {
@@ -219,7 +220,7 @@ The parent can now log in at **/parent/login** using the school code, their emai
   },
   {
     slug: "preferences",
-    icon: "⚙️",
+    Icon: SettingsIcon,
     title: "Preferences & Configuration",
     articles: [
       {
@@ -239,7 +240,7 @@ Go to **Preferences** (bottom of the sidebar) to configure:
         content: `
 Each module (Students, Attendance, Fees, Exams, Parent Portal, Academic Years) can be enabled or disabled per school.
 
-1. Go to **Preferences** → scroll to **Module Feature Flags**.
+1. Go to **Preferences** > scroll to **Module Feature Flags**.
 2. Toggle the switches for the modules you want.
 3. Click **Save Preferences**.
 
@@ -317,7 +318,7 @@ export default function HelpPage() {
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🎓</span>
+            <SchoolIcon className="w-7 h-7 text-brand-700" />
             <span className="text-xl font-bold text-brand-800">Kalvi</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
@@ -363,7 +364,7 @@ export default function HelpPage() {
                     : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
-                <span>{section.icon}</span>
+                <section.Icon className="w-4 h-4" />
                 {section.title}
               </button>
             ))}
@@ -373,7 +374,7 @@ export default function HelpPage() {
         {/* Middle — article list */}
         <div className="w-48 flex-shrink-0 hidden md:block">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 px-1">
-            {currentSection.icon} {currentSection.title}
+            <currentSection.Icon className="w-4 h-4 inline mr-1" /> {currentSection.title}
           </p>
           <nav className="space-y-1">
             {currentSection.articles.map((article) => (
@@ -396,7 +397,7 @@ export default function HelpPage() {
         <main className="flex-1 min-w-0">
           <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
             <div className="text-xs text-slate-400 mb-1 font-medium uppercase tracking-wide">
-              {currentSection.icon} {currentSection.title}
+              <currentSection.Icon className="w-4 h-4 inline mr-1" /> {currentSection.title}
             </div>
             <h2 className="text-2xl font-bold text-slate-800 mb-6">
               {currentArticle.title}
@@ -406,10 +407,10 @@ export default function HelpPage() {
               <p className="text-xs text-slate-400">Was this helpful?</p>
               <div className="flex gap-2">
                 <button className="text-sm border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition">
-                  👍 Yes
+                  <CheckIcon className="w-4 h-4 inline mr-1" /> Yes
                 </button>
                 <button className="text-sm border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition">
-                  👎 No
+                  <CloseIcon className="w-4 h-4 inline mr-1" /> No
                 </button>
               </div>
             </div>
@@ -436,7 +437,7 @@ export default function HelpPage() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-500 py-8 text-center text-sm mt-12">
-        <Link to="/" className="text-white font-bold mr-4">🎓 Kalvi</Link>
+        <Link to="/" className="text-white font-bold mr-4 inline-flex items-center gap-1"><SchoolIcon className="w-4 h-4" /> Kalvi</Link>
         <Link to="/features" className="hover:text-white mr-4 transition">Features</Link>
         <Link to="/pricing" className="hover:text-white transition">Pricing</Link>
         <p className="mt-4 text-xs">© {new Date().getFullYear()} Kalvi</p>

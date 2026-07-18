@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { parentApi } from "../../api/parentClient";
 import { Spinner } from "../../components/ui";
+import { FeesIcon, WarningIcon, ChevronDownIcon, ChevronUpIcon } from "../../components/icons";
 
 interface FeeItem {
   amount: number;
@@ -45,7 +46,7 @@ export default function ParentFees() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-slate-800">💰 Fees</h2>
+      <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2"><FeesIcon className="w-6 h-6 text-amber-600" /> Fees</h2>
 
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -100,7 +101,7 @@ export default function ParentFees() {
                     )}
                   </div>
                   <StatusBadge status={f.status} />
-                  <span className="text-slate-300 text-sm">{expanded === f.id ? "▲" : "▼"}</span>
+                  <span className="text-slate-300 text-sm">{expanded === f.id ? <ChevronUpIcon className="w-4 h-4" /> : <ChevronDownIcon className="w-4 h-4" />}</span>
                 </div>
               </button>
 
@@ -154,10 +155,11 @@ export default function ParentFees() {
                   )}
 
                   {f.status !== "PAID" && (
-                    <p className="text-xs text-amber-600 bg-amber-50 rounded p-2">
-                      ⚠️ This invoice has an outstanding balance of{" "}
+                    <p className="text-xs text-amber-600 bg-amber-50 rounded p-2 flex items-start gap-1.5">
+                      <WarningIcon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                      <span>This invoice has an outstanding balance of{" "}
                       <strong>₹{(f.amount - f.amountPaid).toLocaleString("en-IN")}</strong>.
-                      Please contact the school office to make a payment.
+                      Please contact the school office to make a payment.</span>
                     </p>
                   )}
                 </div>

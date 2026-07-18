@@ -178,7 +178,7 @@ export default function Login() {
                 <FormError message={error} />
 
                 <button className="btn-primary w-full py-2.5" disabled={loading}>
-                  {loading ? "Signing in…" : "Sign In →"}
+                  {loading ? "Signing in…" : <span className="inline-flex items-center gap-1.5">Sign In <ArrowRightIcon className="w-4 h-4" /></span>}
                 </button>
               </form>
 

@@ -352,7 +352,7 @@ export default function TeacherDashboard({ staffId }: { staffId?: string }) {
                     <div key={ex.id} className="text-xs bg-amber-50 rounded-lg px-3 py-2 mb-1">
                       <p>{ex.period.startTime} · {ex.period.subject?.name}</p>
                       <p className="text-slate-500">
-                        {ex.originalStaff.firstName} → {ex.substitute.firstName}
+                        {ex.originalStaff.firstName} to {ex.substitute.firstName}
                       </p>
                     </div>
                   ))}

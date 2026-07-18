@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api, parseApiError, type ApiFieldIssue } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { FormError, FieldHint } from "../components/ui";
-import { ArrowLeftIcon, ArrowRightIcon } from "../components/icons";
+import { ArrowLeftIcon, ArrowRightIcon, SchoolIcon } from "../components/icons";
 
 export default function CreateSchool() {
   const { user, reloadUser } = useAuth();
@@ -76,7 +76,7 @@ export default function CreateSchool() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-700 to-brand-800 p-4">
       <div className="card w-full max-w-2xl p-8">
         <div className="text-center mb-6">
-          <div className="text-4xl">🏫</div>
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><SchoolIcon className="w-8 h-8" /></div>
           <h1 className="text-2xl font-bold mt-2">
             {user?.schools && user.schools.length > 0
               ? "Add Another School"
@@ -225,7 +225,7 @@ export default function CreateSchool() {
               <span />
             )}
             <button className="btn-primary px-8" disabled={loading}>
-              {loading ? "Creating school…" : "Create School →"}
+              {loading ? "Creating school…" : <span className="inline-flex items-center gap-1.5">Create School <ArrowRightIcon className="w-4 h-4" /></span>}
             </button>
           </div>
         </form>

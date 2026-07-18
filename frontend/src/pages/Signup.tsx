@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { publicApi, api } from "../lib/publicApi";
 import { parseApiError, type ApiFieldIssue } from "../api/client";
-import { ArrowLeftIcon } from "../components/icons";
+import { ArrowLeftIcon, ArrowRightIcon, SchoolIcon } from "../components/icons";
 import { FormError } from "../components/ui";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 
@@ -54,7 +54,7 @@ export default function Signup() {
       });
       // Auto-login: store token and set user
       loginWithToken(res.data.token, res.data.user);
-      // After signup, user has no school yet → go create one
+      // After signup, user has no school yet then go create one
       navigate("/create-school", { replace: true });
     } catch (err) {
       const parsed = parseApiError(err, "Could not create your account. Please try again.");
@@ -69,7 +69,7 @@ export default function Signup() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-700 to-brand-800 p-4">
       <div className="card w-full max-w-md p-8">
         <div className="text-center mb-6">
-          <div className="text-4xl">🎓</div>
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700"><SchoolIcon className="w-8 h-8" /></div>
           <h1 className="text-2xl font-bold mt-2">Create your account</h1>
           <p className="text-sm text-slate-500">
             You'll set up your school in the next step
@@ -130,7 +130,7 @@ export default function Signup() {
           <FormError message={error} issues={issues} />
 
           <button className="btn-primary w-full" disabled={loading}>
-            {loading ? "Creating account…" : "Create Account →"}
+            {loading ? "Creating account…" : <span className="inline-flex items-center gap-1.5">Create Account <ArrowRightIcon className="w-4 h-4" /></span>}
           </button>
         </form>
 

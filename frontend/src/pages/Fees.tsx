@@ -9,7 +9,7 @@ import {
   FieldHint,
 } from "../components/ui";
 import { formatDate, money } from "../lib/format";
-import { CloseIcon } from "../components/icons";
+import { CloseIcon, CheckCircleIcon, ChevronDownIcon, ChevronUpIcon } from "../components/icons";
 import { useConfig } from "../context/ConfigContext";
 import { DownloadPDFButton } from "../components/pdf/DownloadPDFButton";
 import { ReceiptPDF } from "../components/pdf/ReceiptPDF";
@@ -319,7 +319,7 @@ export default function Fees() {
                       >
                         {f.items?.length ?? 0} head
                         {(f.items?.length ?? 0) === 1 ? "" : "s"}{" "}
-                        {expanded === f.id ? "▲" : "▼"}
+                        {expanded === f.id ? <ChevronUpIcon className="w-3.5 h-3.5 inline" /> : <ChevronDownIcon className="w-3.5 h-3.5 inline" />}
                       </button>
                     </td>
                     <td className="px-4 py-3">{money$(f.amount)}</td>
@@ -447,7 +447,7 @@ export default function Fees() {
             ) : activeHeads.length === 0 ? (
               <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
                 This student's class has no fee heads configured yet. Add them
-                under <strong>Preferences → Fee Configuration</strong>.
+                under <strong>Preferences &gt; Fee Configuration</strong>.
               </p>
             ) : null}
             <div className="mt-2 space-y-2">
@@ -516,7 +516,7 @@ export default function Fees() {
       {/* Post-payment receipt download toast */}
       {lastReceipt && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-xl bg-white shadow-2xl border border-slate-200 px-4 py-3 animate-fade-in">
-          <span className="text-green-600 text-xl">✅</span>
+          <CheckCircleIcon className="w-5 h-5 text-green-600" />
           <div className="flex-1">
             <p className="text-sm font-semibold text-slate-800">Payment recorded!</p>
             <p className="text-xs text-slate-500">Receipt {lastReceipt.payment.receiptNo}</p>

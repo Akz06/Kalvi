@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { CheckIcon } from "../../components/icons";
+import { CheckIcon, ChevronDownIcon, SchoolIcon } from "../../components/icons";
 
 const PLANS = [
   {
@@ -99,7 +99,7 @@ export default function PricingPage() {
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🎓</span>
+            <SchoolIcon className="w-7 h-7 text-brand-700" />
             <span className="text-xl font-bold text-brand-800">Kalvi</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
@@ -193,7 +193,7 @@ export default function PricingPage() {
               <details key={item.q} className="group border border-slate-200 rounded-xl overflow-hidden">
                 <summary className="flex justify-between items-center px-5 py-4 cursor-pointer font-semibold text-slate-800 text-sm list-none hover:bg-slate-50 transition">
                   {item.q}
-                  <span className="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                  <ChevronDownIcon className="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform" />
                 </summary>
                 <div className="px-5 pb-5 text-sm text-slate-600 leading-relaxed">
                   {item.a}
@@ -213,14 +213,14 @@ export default function PricingPage() {
             to="/register"
             className="mt-8 inline-flex bg-white text-brand-800 font-bold px-8 py-3.5 rounded-xl hover:bg-brand-50 transition shadow-lg"
           >
-            🏫 Register Your School — Free
+            <SchoolIcon className="w-5 h-5 inline mr-2" />Register Your School — Free
           </Link>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-500 py-8 text-center text-sm">
-        <Link to="/" className="text-white font-bold mr-4">🎓 Kalvi</Link>
+        <Link to="/" className="text-white font-bold mr-4 inline-flex items-center gap-1"><SchoolIcon className="w-4 h-4" /> Kalvi</Link>
         <Link to="/features" className="hover:text-white mr-4 transition">Features</Link>
         <Link to="/help" className="hover:text-white transition">Help Guide</Link>
         <p className="mt-4 text-xs">© {new Date().getFullYear()} Kalvi</p>

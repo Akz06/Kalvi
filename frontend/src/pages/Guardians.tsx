@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, parseApiError } from "../api/client";
 import { PageHeader, Modal, FormError, FieldHint, Spinner, EmptyState } from "../components/ui";
+import { GuardiansIcon } from "../components/icons";
 
 interface Student {
   id: string;
@@ -133,7 +134,7 @@ export default function Guardians() {
 
       {/* Info banner */}
       <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
-        👨‍👩‍👧 Guardians can log in at <strong>/parent/login</strong> using their email and password to view their child's attendance, fees, and exam results.
+        <span className="inline-flex items-center gap-1.5"><GuardiansIcon className="w-4 h-4" /> Guardians can log in at <strong>/parent/login</strong> using their email and password to view their child's attendance, fees, and exam results.</span>
       </div>
 
       {/* Search */}

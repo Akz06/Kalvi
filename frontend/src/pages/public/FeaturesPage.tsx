@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import { CheckIcon, ArrowRightIcon } from "../../components/icons";
+import { CheckIcon, ArrowRightIcon, SchoolIcon, StudentsIcon, StaffIcon, ClassesIcon, AttendanceIcon, FeesIcon, ExamsIcon, ReportCardIcon, AcademicYearIcon, GuardiansIcon, SettingsIcon } from "../../components/icons";
 
 const MODULES = [
   {
-    icon: "👨‍🎓",
+    Icon: StudentsIcon,
     title: "Student Management",
     description:
       "Complete student profiles including admission number, DOB, gender, guardian details, and address. Search, filter, and export student records. Supports active and last-year student views.",
@@ -15,7 +15,7 @@ const MODULES = [
     ],
   },
   {
-    icon: "👩‍🏫",
+    Icon: StaffIcon,
     title: "Staff Management",
     description:
       "Manage teaching and non-teaching staff. Assign class mentors, record employee numbers, designations, subjects, and contact info.",
@@ -26,7 +26,7 @@ const MODULES = [
     ],
   },
   {
-    icon: "🏫",
+    Icon: ClassesIcon,
     title: "Classes & Sections",
     description:
       "Fully configurable class structure. Set the class range (LKG to Class 12), number of sections per class (A, B, C…), and re-provision at any time.",
@@ -37,7 +37,7 @@ const MODULES = [
     ],
   },
   {
-    icon: "📅",
+    Icon: AttendanceIcon,
     title: "Attendance",
     description:
       "Daily section-level attendance. Mark all present with one click, then adjust individual records. View per-student attendance summaries.",
@@ -49,7 +49,7 @@ const MODULES = [
     ],
   },
   {
-    icon: "💰",
+    Icon: FeesIcon,
     title: "Fee Management",
     description:
       "Class-specific fee heads with configurable default amounts. Multi-head invoicing with a line-item subform. Immutable payment ledger with receipt numbers and payment modes.",
@@ -62,7 +62,7 @@ const MODULES = [
     ],
   },
   {
-    icon: "📝",
+    Icon: ExamsIcon,
     title: "Exams & Marks",
     description:
       "Create exams per class and subject. Record marks and auto-compute grades (A+ to F) based on configurable pass percentage. Per-student subject-wise breakdown.",
@@ -74,7 +74,7 @@ const MODULES = [
     ],
   },
   {
-    icon: "📄",
+    Icon: ReportCardIcon,
     title: "Report Cards (PDF)",
     description:
       "Generate printable, branded report cards as PDFs directly in the browser. Includes school header, student profile, subject-wise results, grade legend, overall grade, and signature lines.",
@@ -87,7 +87,7 @@ const MODULES = [
     ],
   },
   {
-    icon: "🗓",
+    Icon: AcademicYearIcon,
     title: "Academic Years",
     description:
       "Track student enrollment per academic year. Promote students end-of-year (individually or in bulk). View full enrollment history per student.",
@@ -99,7 +99,7 @@ const MODULES = [
     ],
   },
   {
-    icon: "👨‍👩‍👧",
+    Icon: GuardiansIcon,
     title: "Parent Portal",
     description:
       "A dedicated parent-facing login with a child-centric view. Parents see attendance, fees, and exam results for their child — read-only, secure, isolated from admin.",
@@ -112,7 +112,7 @@ const MODULES = [
     ],
   },
   {
-    icon: "⚙️",
+    Icon: SettingsIcon,
     title: "Preferences & Configuration",
     description:
       "Everything is configurable per school. The Preferences form lets school admins set branding, academic configuration, and toggle modules on or off — no developer needed.",
@@ -134,7 +134,7 @@ export default function FeaturesPage() {
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🎓</span>
+            <SchoolIcon className="w-7 h-7 text-brand-700" />
             <span className="text-xl font-bold text-brand-800">Kalvi</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
@@ -177,8 +177,8 @@ export default function FeaturesPage() {
                 idx % 2 === 1 ? "md:flex-row-reverse" : ""
               }`}
             >
-              <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center text-4xl">
-                {mod.icon}
+              <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-700">
+                <mod.Icon className="w-9 h-9" />
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-slate-800">{mod.title}</h3>
@@ -203,13 +203,13 @@ export default function FeaturesPage() {
           <h2 className="text-3xl font-extrabold">All features. One platform.</h2>
           <p className="text-brand-100 mt-3">Register free. No credit card.</p>
           <Link to="/register" className="mt-8 inline-flex bg-white text-brand-800 font-bold px-8 py-3.5 rounded-xl hover:bg-brand-50 transition shadow-lg">
-            🏫 Register Your School
+            <SchoolIcon className="w-5 h-5 inline mr-2" />Register Your School
           </Link>
         </div>
       </section>
 
       <footer className="bg-slate-900 text-slate-500 py-8 text-center text-sm">
-        <Link to="/" className="text-white font-bold mr-4">🎓 Kalvi</Link>
+        <Link to="/" className="text-white font-bold mr-4 inline-flex items-center gap-1"><SchoolIcon className="w-4 h-4" /> Kalvi</Link>
         <Link to="/pricing" className="hover:text-white mr-4 transition">Pricing</Link>
         <Link to="/help" className="hover:text-white transition">Help Guide</Link>
         <p className="mt-4 text-xs">© {new Date().getFullYear()} Kalvi</p>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { parentApi } from "../../api/parentClient";
 import { Spinner } from "../../components/ui";
+import { ExamsIcon } from "../../components/icons";
 
 interface ExamResult {
   examName: string;
@@ -38,7 +39,7 @@ export default function ParentExams() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-slate-800">📝 Exams & Grades</h2>
+      <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2"><ExamsIcon className="w-6 h-6 text-violet-600" /> Exams & Grades</h2>
 
       {/* Overall summary */}
       {summary && summary.totalMax > 0 && (

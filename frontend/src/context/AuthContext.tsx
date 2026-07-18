@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(res.data.user);
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
-      // 401 = invalid/expired token → clear it
+      // 401 = invalid/expired token to clear it
       // Any other error (network, 500) = keep the token, don't log the user out
       if (status === 401) {
         localStorage.removeItem("token");

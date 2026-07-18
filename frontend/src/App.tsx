@@ -132,7 +132,7 @@ export default function App() {
           <Route path="/parent/exams" element={<ParentExams />} />
         </Route>
 
-        {/* Old /dashboard etc → redirect to /app */}
+        {/* Old /dashboard etc to redirect to /app */}
         <Route path="/dashboard" element={<Navigate to="/app" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

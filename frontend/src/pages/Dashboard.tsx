@@ -198,9 +198,9 @@ function QuickAction({ to, icon, label, desc, color }: { to: string; icon: React
 
 function greeting(name: string) {
   const h = new Date().getHours();
-  if (h < 12) return `Good morning, ${name} 👋`;
-  if (h < 17) return `Good afternoon, ${name} 👋`;
-  return `Good evening, ${name} 👋`;
+  if (h < 12) return `Good morning, ${name}`;
+  if (h < 17) return `Good afternoon, ${name}`;
+  return `Good evening, ${name}`;
 }
 
 // ─── Today's date banner ──────────────────────────────────────────────────────
@@ -461,13 +461,13 @@ export default function Dashboard() {
         <h2 className="text-base font-bold mb-4 opacity-90">School at a Glance</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: "Classes",  value: stats.classes,  icon: "🏫" },
+            { label: "Classes",  value: stats.classes,  icon: <Icons.Exams /> },
             { label: "Sections", value: stats.sections, icon: "🗂️" },
-            { label: "Students", value: stats.students, icon: "👨‍🎓" },
-            { label: "Staff",    value: stats.staff,    icon: "👩‍🏫" },
+            { label: "Students", value: stats.students, icon: <Icons.Students /> },
+            { label: "Staff",    value: stats.staff,    icon: <Icons.Staff /> },
           ].map((item) => (
             <div key={item.label} className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-              <div className="text-2xl mb-1">{item.icon}</div>
+              <div className="mb-1 text-white/90">{item.icon}</div>
               <div className="text-2xl font-extrabold">{item.value}</div>
               <div className="text-xs opacity-70 mt-0.5">{item.label}</div>
             </div>
