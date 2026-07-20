@@ -216,21 +216,63 @@ export async function getNextClassForStaff(schoolId: string, staffId: string) {
   return period;
 }
 
+// Subject pools by class level — used for auto-population
+function subjectsForLevel(level: number): string[] {
+  if (level <= 2)  return ["ENG","TAM","MAT","EVS","PE"];
+  if (level <= 5)  return ["ENG","TAM","MAT","SCI","SST","HIN","PE"];
+  if (level <= 8)  return ["ENG","TAM","HIN","MAT","SCI","SST","CS","PE"];
+  if (level <= 10) return ["ENG","TAM","HIN","MAT","PHY","CHE","BIO","SST","CS","PE"];
+  // 11–12: split streams — return all; admin can edit
+  return ["ENG","MAT","PHY","CHE","BIO","CS","COM","ACC","ECO","BUS","PE"];
+}
+
 export async function generateTimetable(schoolId: string, body: {
   sectionId: string;
   academicYearId?: string;
   periodsPerDay: number;
-  startTime: string; // "09:00"
-  periodDuration: number; // minutes
-  breakAfterPeriod: number; // add break after this period
-  breakDuration: number; // minutes
-  workingDays: number[]; // [1,2,3,4,5] = Mon-Fri
+  startTime: string;       // "09:00"
+  periodDuration: number;  // minutes
+  breakAfterPeriod: number;
+  breakDuration: number;   // minutes
+  workingDays: number[];   // [1,2,3,4,5] = Mon-Fri
 }) {
   const { sectionId, academicYearId, periodsPerDay, startTime, periodDuration,
     breakAfterPeriod, breakDuration, workingDays } = body;
 
-  const section = await prisma.section.findFirst({ where: { id: sectionId, schoolId } });
+  // Load section + class level
+  const section = await prisma.section.findFirst({
+    where: { id: sectionId, schoolId },
+    include: { class: true },
+  });
   if (!section) throw NotFound("Section not found.");
+
+  const classLevel: number = (section.class as any).level ?? 1;
+
+  // Load all active subjects for school
+  const allSubjects = await prisma.subject.findMany({
+    where: { schoolId, active: true },
+    include: {
+      staffSubjects: {
+        include: { staff: { select: { id: true, firstName: true, lastName: true } } },
+      },
+    },
+  });
+
+  // Filter subjects relevant to this class level (by code pool)
+  const levelCodes = subjectsForLevel(classLevel);
+  const relevantSubjects = allSubjects.filter((s) =>
+    levelCodes.includes(s.code)
+  );
+
+  // Build a map: subjectId → first assigned teacher (if any)
+  const subjectTeacherMap = new Map<string, string | null>();
+  for (const s of relevantSubjects) {
+    const teacher = s.staffSubjects[0]?.staff?.id ?? null;
+    subjectTeacherMap.set(s.id, teacher);
+  }
+
+  // Use all school subjects if no relevant ones found (new school, no staff yet)
+  const pool = relevantSubjects.length > 0 ? relevantSubjects : allSubjects;
 
   // Remove existing timetable for this section+year
   const existing = await prisma.timetable.findFirst({
@@ -246,8 +288,10 @@ export async function generateTimetable(schoolId: string, body: {
     data: { schoolId, sectionId, academicYearId: academicYearId ?? null, active: true },
   });
 
-  // Build periods
+  // Build periods with auto-populated subject + teacher
   const periods: any[] = [];
+  let globalPeriodIdx = 0; // used for round-robin subject assignment across all days
+
   for (const dow of workingDays) {
     let [h, m] = startTime.split(":").map(Number);
     let periodNo = 1;
@@ -259,11 +303,23 @@ export async function generateTimetable(schoolId: string, body: {
       const endM = endMinutes % 60;
       const end = `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
 
+      // Auto-assign subject + teacher from pool (round-robin)
+      let subjectId: string | null = null;
+      let staffId: string | null = null;
+      if (pool.length > 0) {
+        const subject = pool[globalPeriodIdx % pool.length];
+        subjectId = subject.id;
+        staffId = subjectTeacherMap.get(subject.id) ?? null;
+        globalPeriodIdx++;
+      }
+
       periods.push({
         schoolId, timetableId: timetable.id,
         dayOfWeek: dow, periodNo,
         startTime: start, endTime: end,
         isBreak: false,
+        subjectId,
+        staffId,
       });
       periodNo++;
       h = endH; m = endM;
@@ -279,6 +335,7 @@ export async function generateTimetable(schoolId: string, body: {
           startTime: `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`,
           endTime: `${String(bEndH).padStart(2, "0")}:${String(bEndM).padStart(2, "0")}`,
           isBreak: true, label: "Break",
+          subjectId: null, staffId: null,
         });
         periodNo++;
         h = bEndH; m = bEndM;
@@ -288,6 +345,60 @@ export async function generateTimetable(schoolId: string, body: {
 
   await prisma.timetablePeriod.createMany({ data: periods });
   return getTimetableForSection(schoolId, sectionId, academicYearId);
+}
+
+// ── Subjects conducted this year ──────────────────────────────────────────────
+
+export async function getSubjectsConductedStats(schoolId: string, academicYearId?: string) {
+  // Count distinct subjects that appear in timetable periods (non-break, assigned)
+  // and cross-reference with exam records for "conducted" count
+  const [
+    timetableSubjects,
+    examSubjects,
+    totalPeriods,
+  ] = await Promise.all([
+    // Distinct subjects in active timetables
+    prisma.timetablePeriod.findMany({
+      where: {
+        schoolId,
+        isBreak: false,
+        subjectId: { not: null },
+        timetable: {
+          active: true,
+          ...(academicYearId ? { academicYearId } : {}),
+        },
+      },
+      select: { subjectId: true },
+      distinct: ["subjectId"],
+    }),
+
+    // Distinct subjects that have had exams this year
+    prisma.exam.findMany({
+      where: {
+        schoolId,
+        subjectId: { not: null },
+        ...(academicYearId ? { academicYearId } : {}),
+      },
+      select: { subjectId: true },
+      distinct: ["subjectId"],
+    }),
+
+    // Total teaching periods this week (non-break, assigned)
+    prisma.timetablePeriod.count({
+      where: {
+        schoolId,
+        isBreak: false,
+        subjectId: { not: null },
+        timetable: { active: true },
+      },
+    }),
+  ]);
+
+  return {
+    subjectsInTimetable: timetableSubjects.length,
+    subjectsWithExams: examSubjects.length,
+    totalPeriodsPerWeek: totalPeriods,
+  };
 }
 
 export async function updatePeriod(schoolId: string, periodId: string, body: {

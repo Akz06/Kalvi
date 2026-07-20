@@ -77,6 +77,11 @@ router.get("/staff/:staffId/next-class", asyncHandler(async (req, res) => {
   res.json(await svc.getNextClassForStaff(tenantId(req), req.params.staffId));
 }));
 
+router.get("/subjects-conducted", asyncHandler(async (req, res) => {
+  const { academicYearId } = req.query as any;
+  res.json(await svc.getSubjectsConductedStats(tenantId(req), academicYearId));
+}));
+
 router.post("/generate", authorize("ADMIN", "SUPERADMIN"), asyncHandler(async (req, res) => {
   res.status(201).json(await svc.generateTimetable(tenantId(req), req.body));
 }));

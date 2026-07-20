@@ -151,8 +151,13 @@ function GenerateModal({ sections, onGenerated, onClose }: {
 
 // ─── Period Edit Modal ────────────────────────────────────────────────────────
 
+// Extend Subject type to carry staff assignment info
+interface SubjectWithStaff extends Subject {
+  staffSubjects?: { staff: { id: string; firstName: string; lastName: string } }[];
+}
+
 function EditPeriodModal({ period, subjects, staffList, onSave, onClose }: {
-  period: Period; subjects: Subject[]; staffList: Staff[];
+  period: Period; subjects: SubjectWithStaff[]; staffList: Staff[];
   onSave: (p: Period) => void; onClose: () => void;
 }) {
   const [subjectId, setSubjectId] = useState(period.subject?.id ?? "");
@@ -162,6 +167,15 @@ function EditPeriodModal({ period, subjects, staffList, onSave, onClose }: {
   const [label, setLabel] = useState(period.label ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  // Auto-populate teacher when subject changes
+  function handleSubjectChange(newSubjectId: string) {
+    setSubjectId(newSubjectId);
+    if (!newSubjectId) { setStaffId(""); return; }
+    const subject = subjects.find((s) => s.id === newSubjectId);
+    const assignedTeacher = subject?.staffSubjects?.[0]?.staff?.id;
+    if (assignedTeacher) setStaffId(assignedTeacher);
+  }
 
   async function save() {
     setSaving(true); setError("");
@@ -199,10 +213,17 @@ function EditPeriodModal({ period, subjects, staffList, onSave, onClose }: {
         <>
           <div>
             <label className="label">Subject</label>
-            <select className="input" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
+            <select className="input" value={subjectId}
+              onChange={(e) => handleSubjectChange(e.target.value)}>
               <option value="">— Free Period —</option>
-              {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {subjects.map((s) => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
             </select>
+            {subjectId && subjects.find(s => s.id === subjectId)?.staffSubjects?.[0] && (
+              <p className="text-xs text-indigo-600 mt-1 flex items-center gap-1">
+                <CheckIcon className="w-3 h-3" />
+                Teacher auto-filled from subject assignment
+              </p>
+            )}
           </div>
           <div>
             <label className="label">Teacher</label>
@@ -236,7 +257,7 @@ function EditPeriodModal({ period, subjects, staffList, onSave, onClose }: {
 // ─── Timetable Grid ───────────────────────────────────────────────────────────
 
 function TimetableGrid({ timetable, subjects, staffList, onRefresh, isAdmin }: {
-  timetable: Timetable; subjects: Subject[]; staffList: Staff[];
+  timetable: Timetable; subjects: SubjectWithStaff[]; staffList: Staff[];
   onRefresh: () => void; isAdmin: boolean;
 }) {
   const [editPeriod, setEditPeriod] = useState<Period | null>(null);
@@ -487,6 +508,64 @@ function ExchangePanel({ schoolId, staffList, timetablePeriods, onClose }: {
   );
 }
 
+// ─── Subjects Conducted Banner ────────────────────────────────────────────────
+
+function SubjectsConductedBanner() {
+  const [stats, setStats] = useState<{
+    subjectsInTimetable: number;
+    subjectsWithExams: number;
+    totalPeriodsPerWeek: number;
+  } | null>(null);
+
+  useEffect(() => {
+    api.get("/timetable/subjects-conducted")
+      .then((r) => setStats(r.data))
+      .catch(() => {});
+  }, []);
+
+  if (!stats) return null;
+
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {[
+        {
+          label: "Subjects in Timetable",
+          value: stats.subjectsInTimetable,
+          sub: "active this year",
+          color: "bg-indigo-50 border-indigo-100",
+          text: "text-indigo-700",
+          num: "text-indigo-600",
+        },
+        {
+          label: "Subjects with Exams",
+          value: stats.subjectsWithExams,
+          sub: "assessed this year",
+          color: "bg-violet-50 border-violet-100",
+          text: "text-violet-700",
+          num: "text-violet-600",
+        },
+        {
+          label: "Periods Per Week",
+          value: stats.totalPeriodsPerWeek,
+          sub: "teaching slots total",
+          color: "bg-teal-50 border-teal-100",
+          text: "text-teal-700",
+          num: "text-teal-600",
+        },
+      ].map((card) => (
+        <div key={card.label}
+          className={`rounded-2xl border p-4 flex flex-col gap-1 ${card.color}`}>
+          <p className={`text-xs font-semibold uppercase tracking-wide ${card.text}`}>
+            {card.label}
+          </p>
+          <p className={`text-3xl font-extrabold ${card.num}`}>{card.value}</p>
+          <p className="text-xs text-slate-500">{card.sub}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Main Timetable Page ──────────────────────────────────────────────────────
 
 export default function TimetablePage() {
@@ -494,13 +573,12 @@ export default function TimetablePage() {
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
 
   const [sections, setSections] = useState<Section[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [subjects, setSubjects] = useState<SubjectWithStaff[]>([]);
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [selectedSection, setSelectedSection] = useState<string>("");
   const [timetable, setTimetable] = useState<Timetable | null | "empty">(null);
   const [loading, setLoading] = useState(true);
   const [showGenerate, setShowGenerate] = useState(false);
-  const [showExchanges, setShowExchanges] = useState(false);
   const [tab, setTab] = useState<"section" | "exchange">("section");
 
   useEffect(() => {
@@ -568,6 +646,9 @@ export default function TimetablePage() {
           )}
         </div>
       </div>
+
+      {/* Subjects conducted this year — stat cards */}
+      <SubjectsConductedBanner />
 
       {/* Tabs */}
       <div className="flex gap-1 bg-slate-100 rounded-xl p-1 w-fit">
