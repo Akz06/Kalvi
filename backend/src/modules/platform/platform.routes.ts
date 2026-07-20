@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { asyncHandler } from "../../shared/http.js";
-import { Unauthorized, Forbidden, NotFound } from "../../shared/errors.js";
+import { Unauthorized, Forbidden } from "../../shared/errors.js";
 import * as svc from "./platform.service.js";
 import * as seedSvc from "./seed.service.js";
 

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { parseApiError } from "../../api/client";
+import { parseApiError, platformApiBase } from "../../api/client";
 import { SchoolIcon, EyeIcon, EyeOffIcon } from "../../components/icons";
 
-const PLATFORM_API = `${(import.meta.env.VITE_API_URL as string ?? "").replace(/\/$/, "")}/api/platform`;
+const PLATFORM_API = platformApiBase();
 
 export default function PlatformLogin() {
   const navigate = useNavigate();

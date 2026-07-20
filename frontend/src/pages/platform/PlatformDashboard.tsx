@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { SchoolIcon, StudentsIcon, StaffIcon, CheckCircleIcon } from "../../components/icons";
+import { platformApiBase } from "../../api/client";
 
-const PLATFORM_API = `${(import.meta.env.VITE_API_URL as string ?? "").replace(/\/$/, "")}/api/platform`;
+const PLATFORM_API = platformApiBase();
 
 function platformHeaders() {
   const token = localStorage.getItem("platform_token");

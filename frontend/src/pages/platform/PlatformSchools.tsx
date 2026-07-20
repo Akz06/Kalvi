@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { SeedIcon, TrashIcon, SearchIcon } from "../../components/icons";
+import { platformApiBase } from "../../api/client";
 
-const PLATFORM_API = `${(import.meta.env.VITE_API_URL as string ?? "").replace(/\/$/, "")}/api/platform`;
+const PLATFORM_API = platformApiBase();
 function headers() { return { Authorization: `Bearer ${localStorage.getItem("platform_token")}` }; }
 
 interface School {
