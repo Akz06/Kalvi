@@ -61,6 +61,11 @@ router.delete("/subjects/staff/:staffId/assign/:subjectId", authorize("ADMIN", "
 
 // ── Timetable ─────────────────────────────────────────────────────────────────
 
+// All periods across all active timetables (for exchange form dropdown)
+router.get("/all-periods", asyncHandler(async (req, res) => {
+  res.json(await svc.getAllPeriods(tenantId(req)));
+}));
+
 router.get("/section/:sectionId", asyncHandler(async (req, res) => {
   const tt = await svc.getTimetableForSection(
     tenantId(req), req.params.sectionId,

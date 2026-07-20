@@ -355,28 +355,54 @@ function TimetableGrid({ timetable, subjects, staffList, onRefresh, isAdmin }: {
 
 // ─── Exchange Panel ───────────────────────────────────────────────────────────
 
-function ExchangePanel({ schoolId, staffList, timetablePeriods, onClose }: {
-  schoolId: string; staffList: Staff[]; timetablePeriods: Period[]; onClose: () => void;
+interface AllPeriod extends Period {
+  timetable?: { section: { name: string; class: { name: string } } };
+}
+
+function ExchangePanel({ staffList, onClose }: {
+  staffList: Staff[]; onClose: () => void;
 }) {
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
+  const [allPeriods, setAllPeriods] = useState<AllPeriod[]>([]);
   const [loading, setLoading] = useState(true);
+  const [periodsLoading, setPeriodsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ periodId: "", exchangeDate: "", substituteId: "", reason: "" });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const { user } = useAuth();
 
+  // Load all periods for the school (across all sections/timetables)
+  function loadAllPeriods() {
+    setPeriodsLoading(true);
+    api.get("/timetable/all-periods")
+      .then((r) => setAllPeriods(r.data ?? []))
+      .catch(() => setAllPeriods([]))
+      .finally(() => setPeriodsLoading(false));
+  }
+
   function loadExchanges() {
     setLoading(true);
-    api.get("/timetable/exchanges").then((r) => setExchanges(r.data)).finally(() => setLoading(false));
+    api.get("/timetable/exchanges")
+      .then((r) => setExchanges(r.data ?? []))
+      .catch(() => setExchanges([]))
+      .finally(() => setLoading(false));
   }
-  useEffect(loadExchanges, []);
+
+  useEffect(() => {
+    loadAllPeriods();
+    loadExchanges();
+  }, []);
+
+  const teachablePeriods = allPeriods.filter((p) => !p.isBreak && p.staff);
 
   async function submitExchange() {
     setSaving(true); setError("");
     try {
-      // find original staff for the selected period
-      const period = timetablePeriods.find((p) => p.id === form.periodId);
+      const period = allPeriods.find((p) => p.id === form.periodId);
+      if (!form.periodId) { setError("Please select a period."); setSaving(false); return; }
+      if (!form.exchangeDate) { setError("Please select a date."); setSaving(false); return; }
+      if (!form.substituteId) { setError("Please select a substitute teacher."); setSaving(false); return; }
       await api.post("/timetable/exchanges", {
         periodId: form.periodId,
         exchangeDate: form.exchangeDate,
@@ -385,6 +411,7 @@ function ExchangePanel({ schoolId, staffList, timetablePeriods, onClose }: {
         reason: form.reason,
       });
       setShowForm(false);
+      setForm({ periodId: "", exchangeDate: "", substituteId: "", reason: "" });
       loadExchanges();
     } catch (err) {
       setError(parseApiError(err, "Could not submit request.").message);
@@ -415,15 +442,26 @@ function ExchangePanel({ schoolId, staffList, timetablePeriods, onClose }: {
           <h4 className="text-sm font-semibold text-indigo-800">Request Period Exchange</h4>
           <div>
             <label className="label">Period</label>
-            <select className="input" value={form.periodId}
-              onChange={(e) => setForm({ ...form, periodId: e.target.value })}>
-              <option value="">Select period…</option>
-              {timetablePeriods.filter((p) => !p.isBreak && p.staff).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {DAY_FULL[p.dayOfWeek - 1]} P{p.periodNo} · {p.startTime} · {p.subject?.name ?? "Free"} · {p.staff?.firstName} {p.staff?.lastName}
-                </option>
-              ))}
-            </select>
+            {periodsLoading ? (
+              <div className="input flex items-center text-slate-400 text-sm">Loading periods…</div>
+            ) : teachablePeriods.length === 0 ? (
+              <div className="input flex items-center text-slate-400 text-sm">
+                No periods available — generate a timetable first
+              </div>
+            ) : (
+              <select className="input" value={form.periodId}
+                onChange={(e) => setForm({ ...form, periodId: e.target.value })}>
+                <option value="">Select period…</option>
+                {teachablePeriods.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {DAY_FULL[p.dayOfWeek - 1]} P{p.periodNo} · {p.startTime}
+                    {p.subject ? ` · ${p.subject.name}` : ""}
+                    {p.staff ? ` · ${p.staff.firstName} ${p.staff.lastName}` : ""}
+                    {p.timetable ? ` (${p.timetable.section.class.name} ${p.timetable.section.name})` : ""}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -732,7 +770,7 @@ export default function TimetablePage() {
       {tab === "exchange" && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <ExchangePanel
-            schoolId="" staffList={staffList} timetablePeriods={allPeriods}
+            staffList={staffList}
             onClose={() => setTab("section")}
           />
         </div>

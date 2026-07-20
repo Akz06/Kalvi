@@ -401,6 +401,25 @@ export async function getSubjectsConductedStats(schoolId: string, academicYearId
   };
 }
 
+// All non-break periods across every active timetable — used for exchange form
+export async function getAllPeriods(schoolId: string) {
+  return prisma.timetablePeriod.findMany({
+    where: {
+      schoolId,
+      isBreak: false,
+      timetable: { active: true },
+    },
+    orderBy: [{ dayOfWeek: "asc" }, { periodNo: "asc" }],
+    include: {
+      subject: { select: { id: true, name: true, code: true } },
+      staff: { select: { id: true, firstName: true, lastName: true } },
+      timetable: {
+        include: { section: { include: { class: true } } },
+      },
+    },
+  });
+}
+
 export async function updatePeriod(schoolId: string, periodId: string, body: {
   subjectId?: string | null;
   staffId?: string | null;
