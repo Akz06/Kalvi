@@ -40,6 +40,9 @@ import PlatformLogin from "./pages/platform/PlatformLogin";
 import PlatformLayout from "./pages/platform/PlatformLayout";
 import PlatformDashboard from "./pages/platform/PlatformDashboard";
 import PlatformSchools from "./pages/platform/PlatformSchools";
+import PlatformSchoolDetail from "./pages/platform/PlatformSchoolDetail";
+import PlatformAnnouncements from "./pages/platform/PlatformAnnouncements";
+import PlatformLogs from "./pages/platform/PlatformLogs";
 
 // Parent portal pages
 import ParentLogin from "./pages/parent/ParentLogin";
@@ -144,6 +147,9 @@ export default function App() {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="dashboard" element={<PlatformDashboard />} />
           <Route path="schools" element={<PlatformSchools />} />
+          <Route path="schools/:id" element={<PlatformSchoolDetail />} />
+          <Route path="announcements" element={<PlatformAnnouncements />} />
+          <Route path="logs" element={<PlatformLogs />} />
         </Route>
 
         {/* Old /dashboard etc to redirect to /app */}

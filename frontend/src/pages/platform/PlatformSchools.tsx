@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { SeedIcon, TrashIcon, SearchIcon } from "../../components/icons";
+import { useNavigate } from "react-router-dom";
+import { SeedIcon, TrashIcon, SearchIcon, ArrowRightIcon } from "../../components/icons";
 import { platformApiBase } from "../../api/client";
 
 const PLATFORM_API = platformApiBase();
@@ -18,6 +19,7 @@ interface SeedResult {
 }
 
 export default function PlatformSchools() {
+  const navigate = useNavigate();
   const [schools, setSchools] = useState<School[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -130,6 +132,13 @@ export default function PlatformSchools() {
                 </td>
                 <td className="px-6 py-3.5">
                   <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => navigate(`/admin/schools/${s.id}`)}
+                      title="View detail"
+                      className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors"
+                    >
+                      <ArrowRightIcon className="w-4 h-4" />
+                    </button>
                     <button
                       onClick={() => { setSeedTarget(s); setSeedResult(null); }}
                       title="Seed dummy data"
