@@ -198,9 +198,9 @@ function QuickAction({ to, icon, label, desc, color }: { to: string; icon: React
 
 function greeting(name: string) {
   const h = new Date().getHours();
-  if (h < 12) return `Good morning, ${name}`;
-  if (h < 17) return `Good afternoon, ${name}`;
-  return `Good evening, ${name}`;
+  if (h < 12) return `Good morning, ${name} 👋`;
+  if (h < 17) return `Good afternoon, ${name} 👋`;
+  return `Good evening, ${name} 👋`;
 }
 
 // ─── Today's date banner ──────────────────────────────────────────────────────
@@ -217,33 +217,35 @@ export default function Dashboard() {
   const { config } = useConfig();
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
-  const [error, setError] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [loadedFromFallback, setLoadedFromFallback] = useState(false);
 
-  useEffect(() => {
+  const emptyStats: Stats = {
+    students: 0, newStudentsThisMonth: 0,
+    staff: 0, classes: 0, sections: 0, exams: 0,
+    outstandingFees: 0, collectedThisMonth: 0,
+    presentToday: 0, absentToday: 0, attendanceTrend: 0,
+    attendanceSparkline: Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(); d.setDate(d.getDate() - (6 - i));
+      return { date: d.toISOString().split("T")[0], present: 0, absent: 0 };
+    }),
+    recentPayments: [],
+    upcomingExams: [],
+  };
+
+  const loadStats = () => {
+    setRetrying(true);
     api.get("/dashboard/stats")
-      .then((r) => setStats(r.data))
-      .catch(() => setError(true));
-  }, []);
+      .then((r) => { setStats(r.data); setLoadedFromFallback(false); setRetrying(false); })
+      .catch(() => { setStats(emptyStats); setLoadedFromFallback(true); setRetrying(false); });
+  };
+
+  useEffect(() => { loadStats(); }, []);
 
   const currency = config?.settings?.currency ?? "INR";
   const locale   = config?.settings?.locale   ?? "en-IN";
   const firstName = user?.name?.split(" ")[0] ?? "Admin";
   const schoolName = config?.name ?? "Your School";
-
-  if (error) return (
-    <div className="flex flex-col items-center justify-center h-64 text-slate-400 gap-2">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-10 h-10 text-slate-300">
-        <circle cx="12" cy="12" r="9"/><path strokeLinecap="round" d="M12 8v4M12 16h.01"/>
-      </svg>
-      <p className="text-sm font-medium text-slate-500">Could not load dashboard stats.</p>
-      <button
-        onClick={() => { setError(false); api.get("/dashboard/stats").then(r => setStats(r.data)).catch(() => setError(true)); }}
-        className="mt-2 px-4 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-      >
-        Retry
-      </button>
-    </div>
-  );
 
   if (!stats) return <SectionLoader />;
 
@@ -254,6 +256,25 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 pb-10">
+
+      {/* ── Fallback notice ── */}
+      {loadedFromFallback && (
+        <div className="flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-2.5 text-amber-700">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4 flex-shrink-0">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <span className="text-sm font-medium">Could not load live stats — showing empty dashboard. Check your connection or try again.</span>
+          </div>
+          <button
+            onClick={loadStats}
+            disabled={retrying}
+            className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 transition"
+          >
+            {retrying ? "Retrying…" : "Retry"}
+          </button>
+        </div>
+      )}
 
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -461,13 +482,13 @@ export default function Dashboard() {
         <h2 className="text-base font-bold mb-4 opacity-90">School at a Glance</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: "Classes",  value: stats.classes,  icon: <Icons.Exams /> },
-            { label: "Sections", value: stats.sections, icon: "🗂️" },
-            { label: "Students", value: stats.students, icon: <Icons.Students /> },
-            { label: "Staff",    value: stats.staff,    icon: <Icons.Staff /> },
+            { label: "Classes",  value: stats.classes,  icon: "🏫" },
+            { label: "Sections", value: stats.sections, icon: <Icons.Staff /> },
+            { label: "Students", value: stats.students, icon: "👨‍🎓" },
+            { label: "Staff",    value: stats.staff,    icon: "👩‍🏫" },
           ].map((item) => (
             <div key={item.label} className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-              <div className="mb-1 text-white/90">{item.icon}</div>
+              <div className="text-2xl mb-1">{item.icon}</div>
               <div className="text-2xl font-extrabold">{item.value}</div>
               <div className="text-xs opacity-70 mt-0.5">{item.label}</div>
             </div>

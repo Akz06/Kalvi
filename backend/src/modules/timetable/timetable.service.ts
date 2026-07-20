@@ -45,7 +45,6 @@ export async function ensureDefaultDesignations(schoolId: string) {
       schoolId,
       name,
     })),
-    skipDuplicates: true,
   });
 }
 
@@ -85,7 +84,6 @@ export async function ensureDefaultSubjects(schoolId: string) {
       name: s.name,
       code: s.code,
     })),
-    skipDuplicates: true,
   });
 }
 
