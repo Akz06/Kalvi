@@ -583,3 +583,13 @@ export function KeyIcon({ className = "w-4 h-4" }: IconProps) {
     </svg>
   );
 }
+
+export function SeedIcon({ className = "w-4 h-4" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22V12" />
+      <path d="M12 12C12 7 7 4 2 5c0 5 3 9 10 7" />
+      <path d="M12 12c0-5 5-8 10-7-1 5-4 8-10 7" />
+    </svg>
+  );
+}

@@ -22,6 +22,7 @@ import {
 } from "./modules/parent/parent.routes.js";
 import paymentRoutes from "./modules/payments/payments.routes.js";
 import timetableRoutes from "./modules/timetable/timetable.routes.js";
+import platformRoutes from "./modules/platform/platform.routes.js";
 
 const isTest = env.NODE_ENV === "test";
 
@@ -138,6 +139,7 @@ export function createApp() {
   app.use("/api/parent/portal", parentPortalRouter);
   app.use("/api/payments", paymentRoutes);
   app.use("/api/timetable", timetableRoutes);
+  app.use("/api/platform", platformRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

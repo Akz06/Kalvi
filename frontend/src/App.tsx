@@ -35,6 +35,12 @@ import PaymentSettings from "./pages/PaymentSettings";
 import TimetablePage from "./pages/Timetable";
 import TeacherDashboard from "./pages/TeacherDashboard";
 
+// Platform admin pages
+import PlatformLogin from "./pages/platform/PlatformLogin";
+import PlatformLayout from "./pages/platform/PlatformLayout";
+import PlatformDashboard from "./pages/platform/PlatformDashboard";
+import PlatformSchools from "./pages/platform/PlatformSchools";
+
 // Parent portal pages
 import ParentLogin from "./pages/parent/ParentLogin";
 import ParentDashboard from "./pages/parent/ParentDashboard";
@@ -130,6 +136,14 @@ export default function App() {
           <Route path="/parent/attendance" element={<ParentAttendance />} />
           <Route path="/parent/fees" element={<ParentFees />} />
           <Route path="/parent/exams" element={<ParentExams />} />
+        </Route>
+
+        {/* ── Platform Admin ───────────────────────────── */}
+        <Route path="/admin/login" element={<PlatformLogin />} />
+        <Route path="/admin" element={<PlatformLayout />}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<PlatformDashboard />} />
+          <Route path="schools" element={<PlatformSchools />} />
         </Route>
 
         {/* Old /dashboard etc to redirect to /app */}
