@@ -182,13 +182,16 @@ export async function impersonateSchool(schoolId: string) {
   if (!school) throw new Error("School not found.");
 
   const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret";
+  // Token MUST include type:"access" — verifyToken() in auth.ts rejects
+  // any token without this field, causing the impersonated session to fail.
   const token = jwt.sign(
     {
-      userId: adminUser.id,
+      sub: adminUser.id,        // verifyToken reads sub, not userId
       schoolId: school.id,
       schoolSlug: school.slug,
       role: adminUser.role,
       email: adminUser.email,
+      type: "access",           // required by verifyToken()
       impersonated: true,
     },
     JWT_SECRET,

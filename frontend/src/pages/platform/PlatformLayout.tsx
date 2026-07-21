@@ -80,7 +80,7 @@ export default function PlatformLayout() {
                     : "text-slate-400 hover:bg-white/8 hover:text-white"
                 }`}
               >
-                <Icon className="w-4.5 h-4.5" />
+                <Icon className="w-4 h-4" />
                 {label}
               </Link>
             );

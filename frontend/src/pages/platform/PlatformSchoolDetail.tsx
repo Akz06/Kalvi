@@ -64,11 +64,22 @@ export default function PlatformSchoolDetail() {
     setImpersonating(true);
     try {
       const res = await platformApi.post(`/schools/${id}/impersonate`, {});
-      localStorage.setItem("token", res.data.token);
-      window.open("/app", "_blank");
+      const { token, schoolSlug } = res.data;
+
+      // Write the impersonated school token into localStorage so the
+      // school app's AuthContext picks it up on load — no login needed.
+      localStorage.setItem("token", token);
+
+      // Open /app/dashboard directly — bypass login page entirely.
+      // Use replace: true inside the new tab so the back button won't
+      // bring them back to /login (there's nothing to go back to).
+      const target = schoolSlug
+        ? `/app/dashboard`
+        : `/app`;
+      window.open(target, "_blank");
       showToast(`Impersonating ${school?.name} — new tab opened`);
     } catch {
-      showToast("Failed to impersonate. No admin user found.");
+      showToast("Failed to impersonate. No admin user found for this school.");
     } finally {
       setImpersonating(false);
     }
