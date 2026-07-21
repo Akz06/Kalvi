@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { platformApiBase } from "../../api/client";
+import { platformApi } from "../../api/client";
 import { AnnouncementIcon, TrashIcon, CloseIcon } from "../../components/icons";
-
-const hdrs = () => ({ Authorization: `Bearer ${localStorage.getItem("platform_token")}` });
 
 interface Announcement {
   id: string; title: string; message: string;
@@ -27,7 +24,7 @@ export default function PlatformAnnouncements() {
 
   const load = () => {
     setLoading(true);
-    axios.get(`${platformApiBase()}/announcements`, { headers: hdrs() })
+    platformApi.get("/announcements")
       .then((r) => setItems(r.data))
       .finally(() => setLoading(false));
   };
@@ -37,7 +34,7 @@ export default function PlatformAnnouncements() {
   const handleCreate = async () => {
     setSaving(true);
     try {
-      await axios.post(`${platformApiBase()}/announcements`, form, { headers: hdrs() });
+      await platformApi.post("/announcements", form);
       setShowForm(false);
       setForm({ title: "", message: "", type: "info", target: "all", expiresAt: "" });
       load();
@@ -45,7 +42,7 @@ export default function PlatformAnnouncements() {
   };
 
   const handleDelete = async (id: string) => {
-    await axios.delete(`${platformApiBase()}/announcements/${id}`, { headers: hdrs() });
+    await platformApi.delete(`/announcements/${id}`);
     setItems((prev) => prev.filter((a) => a.id !== id));
   };
 

@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { platformApiBase } from "../../api/client";
+import { platformApi } from "../../api/client";
 import {
   ArrowLeftIcon, SchoolIcon, StudentsIcon, StaffIcon,
   CheckCircleIcon, CloseIcon, KeyIcon, FlagIcon, EditIcon,
 } from "../../components/icons";
 
-const hdrs = () => ({ Authorization: `Bearer ${localStorage.getItem("platform_token")}` });
+
 
 const PLANS = ["free", "starter", "pro", "enterprise"];
 const PLAN_COLORS: Record<string, string> = {
@@ -51,8 +50,8 @@ export default function PlatformSchoolDetail() {
   const load = async () => {
     setLoading(true);
     const [detailRes, flagsRes] = await Promise.all([
-      axios.get(`${platformApiBase()}/schools/${id}`, { headers: hdrs() }),
-      axios.get(`${platformApiBase()}/schools/${id}/flags`, { headers: hdrs() }),
+      platformApi.get(`/schools/${id}`),
+      platformApi.get(`/schools/${id}/flags`),
     ]);
     setSchool(detailRes.data);
     setFlags(flagsRes.data);
@@ -64,7 +63,7 @@ export default function PlatformSchoolDetail() {
   const handleImpersonate = async () => {
     setImpersonating(true);
     try {
-      const res = await axios.post(`${platformApiBase()}/schools/${id}/impersonate`, {}, { headers: hdrs() });
+      const res = await platformApi.post(`/schools/${id}/impersonate`, {});
       localStorage.setItem("token", res.data.token);
       window.open("/app", "_blank");
       showToast(`Impersonating ${school?.name} — new tab opened`);
@@ -78,7 +77,7 @@ export default function PlatformSchoolDetail() {
   const handlePlanChange = async (plan: string) => {
     setSaving(true);
     try {
-      await axios.put(`${platformApiBase()}/schools/${id}/plan`, { plan }, { headers: hdrs() });
+      await platformApi.put(`/schools/${id}/plan`, { plan });
       setSchool((s) => s ? { ...s, plan } : s);
       showToast(`Plan updated to ${plan}`);
     } finally { setSaving(false); }
@@ -88,7 +87,7 @@ export default function PlatformSchoolDetail() {
     if (!flags) return;
     const updated = { ...flags, [key]: !flags[key] };
     setFlags(updated);
-    await axios.put(`${platformApiBase()}/schools/${id}/flags`, updated, { headers: hdrs() });
+    await platformApi.put(`/schools/${id}/flags`, updated);
     showToast("Feature flags saved");
   };
 

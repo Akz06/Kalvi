@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { platformApiBase } from "../../api/client";
+import { useNavigate } from "react-router-dom";
+import { platformApi } from "../../api/client";
 import {
   SchoolIcon, StudentsIcon, StaffIcon, CheckCircleIcon,
   CloseIcon, TrendUpIcon,
 } from "../../components/icons";
 
-const hdrs = () => ({ Authorization: `Bearer ${localStorage.getItem("platform_token")}` });
+
 
 interface Stats {
   totalSchools: number;
@@ -32,13 +32,27 @@ const COLORS: Record<string, string> = {
 export default function PlatformDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState(false);
+  const [error, setError]   = useState<string>("");
+  const navigate = useNavigate();
 
   const load = () => {
-    setLoading(true); setError(false);
-    axios.get(`${platformApiBase()}/stats`, { headers: hdrs() })
+    setLoading(true); setError("");
+    const token = localStorage.getItem("platform_token");
+    if (!token) { navigate("/admin/login", { replace: true }); return; }
+
+    platformApi.get("/stats")
       .then((r) => setStats(r.data))
-      .catch(() => setError(true))
+      .catch((err) => {
+        const status = err?.response?.status;
+        const msg    = err?.response?.data?.error ?? "Could not load platform stats.";
+        if (status === 401 || status === 403) {
+          // Token invalid / expired — force re-login
+          localStorage.removeItem("platform_token");
+          navigate("/admin/login", { replace: true });
+        } else {
+          setError(msg);
+        }
+      })
       .finally(() => setLoading(false));
   };
 
@@ -53,10 +67,26 @@ export default function PlatformDashboard() {
   );
 
   if (error || !stats) return (
-    <div className="flex items-center justify-center h-full flex-col gap-3">
-      <CloseIcon className="w-10 h-10 text-red-400" />
-      <p className="text-slate-500 font-medium">Could not load platform stats.</p>
-      <button onClick={load} className="text-indigo-600 text-sm font-semibold hover:underline">Retry</button>
+    <div className="flex items-center justify-center h-full flex-col gap-4">
+      <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+        <CloseIcon className="w-7 h-7 text-red-400" />
+      </div>
+      <div className="text-center">
+        <p className="text-slate-800 font-semibold">{error || "Could not load platform stats."}</p>
+        <p className="text-slate-400 text-sm mt-1">
+          Check that <code className="bg-slate-100 px-1 rounded text-xs">PLATFORM_ADMIN_PASSWORD</code> and{" "}
+          <code className="bg-slate-100 px-1 rounded text-xs">PLATFORM_ADMIN_JWT_SECRET</code> are set in Railway Variables.
+        </p>
+      </div>
+      <div className="flex gap-3">
+        <button onClick={load} className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
+          Retry
+        </button>
+        <button onClick={() => { localStorage.removeItem("platform_token"); navigate("/admin/login", { replace: true }); }}
+          className="px-4 py-2 border border-slate-300 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors">
+          Re-login
+        </button>
+      </div>
     </div>
   );
 

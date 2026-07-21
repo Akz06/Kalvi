@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { platformApiBase } from "../../api/client";
+import { platformApi } from "../../api/client";
 import { ActivityIcon, SearchIcon } from "../../components/icons";
-
-const hdrs = () => ({ Authorization: `Bearer ${localStorage.getItem("platform_token")}` });
 
 interface Log {
   id: string; action: string; target: string;
@@ -28,7 +25,7 @@ export default function PlatformLogs() {
   const [search, setSearch]     = useState("");
 
   useEffect(() => {
-    axios.get(`${platformApiBase()}/logs?limit=200`, { headers: hdrs() })
+    platformApi.get("/logs?limit=200")
       .then((r) => setLogs(r.data))
       .finally(() => setLoading(false));
   }, []);

@@ -8,9 +8,27 @@ import {
 function usePlatformAuth() {
   const navigate = useNavigate();
   const token = localStorage.getItem("platform_token");
+
   useEffect(() => {
-    if (!token) navigate("/admin/login", { replace: true });
+    if (!token) {
+      navigate("/admin/login", { replace: true });
+      return;
+    }
+    // Verify token is still valid by decoding expiry locally
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        // Token expired — clear and redirect
+        localStorage.removeItem("platform_token");
+        navigate("/admin/login", { replace: true });
+      }
+    } catch {
+      // Malformed token — clear and redirect
+      localStorage.removeItem("platform_token");
+      navigate("/admin/login", { replace: true });
+    }
   }, [token, navigate]);
+
   return !!token;
 }
 

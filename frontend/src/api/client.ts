@@ -28,6 +28,38 @@ export function platformApiBase(): string {
   return `${url.replace(/\/+$/, "")}/api/platform`;
 }
 
+/** Build Axios headers for platform admin requests */
+export function platformHeaders(): Record<string, string> {
+  const token = localStorage.getItem("platform_token") ?? "";
+  return { Authorization: `Bearer ${token}` };
+}
+
+/**
+ * Axios instance for platform admin API calls.
+ * Automatically attaches the platform_token on every request.
+ * On 401/403, clears the token and redirects to /admin/login.
+ */
+export const platformApi = axios.create();
+
+platformApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem("platform_token") ?? "";
+  config.baseURL = platformApiBase();
+  config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+platformApi.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const status = err?.response?.status;
+    if (status === 401 || status === 403) {
+      localStorage.removeItem("platform_token");
+      window.location.href = "/admin/login";
+    }
+    return Promise.reject(err);
+  }
+);
+
 export const api = axios.create({
   baseURL: BASE,
 });
