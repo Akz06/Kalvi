@@ -7,7 +7,6 @@ import {
   CheckCircleIcon, CloseIcon, KeyIcon, FlagIcon, EditIcon,
 } from "../../components/icons";
 
-const PLATFORM_API = platformApiBase();
 const hdrs = () => ({ Authorization: `Bearer ${localStorage.getItem("platform_token")}` });
 
 const PLANS = ["free", "starter", "pro", "enterprise"];
@@ -52,8 +51,8 @@ export default function PlatformSchoolDetail() {
   const load = async () => {
     setLoading(true);
     const [detailRes, flagsRes] = await Promise.all([
-      axios.get(`${PLATFORM_API}/schools/${id}`, { headers: hdrs() }),
-      axios.get(`${PLATFORM_API}/schools/${id}/flags`, { headers: hdrs() }),
+      axios.get(`${platformApiBase()}/schools/${id}`, { headers: hdrs() }),
+      axios.get(`${platformApiBase()}/schools/${id}/flags`, { headers: hdrs() }),
     ]);
     setSchool(detailRes.data);
     setFlags(flagsRes.data);
@@ -65,7 +64,7 @@ export default function PlatformSchoolDetail() {
   const handleImpersonate = async () => {
     setImpersonating(true);
     try {
-      const res = await axios.post(`${PLATFORM_API}/schools/${id}/impersonate`, {}, { headers: hdrs() });
+      const res = await axios.post(`${platformApiBase()}/schools/${id}/impersonate`, {}, { headers: hdrs() });
       localStorage.setItem("token", res.data.token);
       window.open("/app", "_blank");
       showToast(`Impersonating ${school?.name} — new tab opened`);
@@ -79,7 +78,7 @@ export default function PlatformSchoolDetail() {
   const handlePlanChange = async (plan: string) => {
     setSaving(true);
     try {
-      await axios.put(`${PLATFORM_API}/schools/${id}/plan`, { plan }, { headers: hdrs() });
+      await axios.put(`${platformApiBase()}/schools/${id}/plan`, { plan }, { headers: hdrs() });
       setSchool((s) => s ? { ...s, plan } : s);
       showToast(`Plan updated to ${plan}`);
     } finally { setSaving(false); }
@@ -89,7 +88,7 @@ export default function PlatformSchoolDetail() {
     if (!flags) return;
     const updated = { ...flags, [key]: !flags[key] };
     setFlags(updated);
-    await axios.put(`${PLATFORM_API}/schools/${id}/flags`, updated, { headers: hdrs() });
+    await axios.put(`${platformApiBase()}/schools/${id}/flags`, updated, { headers: hdrs() });
     showToast("Feature flags saved");
   };
 

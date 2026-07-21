@@ -4,10 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { parseApiError, platformApiBase } from "../../api/client";
 import { SchoolIcon, EyeIcon, EyeOffIcon } from "../../components/icons";
 
-// Evaluated at call time — never cached at module load, so Railway env vars
-// are always resolved correctly after a fresh build.
-const PLATFORM_API = platformApiBase();
-
 export default function PlatformLogin() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -20,7 +16,7 @@ export default function PlatformLogin() {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post(`${PLATFORM_API}/auth/login`, { password });
+      const res = await axios.post(`${platformApiBase()}/auth/login`, { password });
       localStorage.setItem("platform_token", res.data.token);
       navigate("/admin/dashboard");
     } catch (err) {

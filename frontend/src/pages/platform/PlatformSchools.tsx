@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { SeedIcon, TrashIcon, SearchIcon, ArrowRightIcon } from "../../components/icons";
 import { platformApiBase } from "../../api/client";
 
-const PLATFORM_API = platformApiBase();
 function headers() { return { Authorization: `Bearer ${localStorage.getItem("platform_token")}` }; }
 
 interface School {
@@ -31,7 +30,7 @@ export default function PlatformSchools() {
 
   const load = () => {
     setLoading(true);
-    axios.get(`${PLATFORM_API}/schools?search=${search}`, { headers: headers() })
+    axios.get(`${platformApiBase()}/schools?search=${search}`, { headers: headers() })
       .then((r) => setSchools(r.data))
       .finally(() => setLoading(false));
   };
@@ -39,7 +38,7 @@ export default function PlatformSchools() {
   useEffect(() => { load(); }, [search]);
 
   const handleSuspend = async (school: School) => {
-    await axios.post(`${PLATFORM_API}/schools/${school.id}/suspend`, {}, { headers: headers() });
+    await axios.post(`${platformApiBase()}/schools/${school.id}/suspend`, {}, { headers: headers() });
     load();
   };
 
@@ -47,7 +46,7 @@ export default function PlatformSchools() {
     if (!seedTarget) return;
     setSeeding(true);
     try {
-      const res = await axios.post(`${PLATFORM_API}/schools/${seedTarget.id}/seed`, {}, { headers: headers() });
+      const res = await axios.post(`${platformApiBase()}/schools/${seedTarget.id}/seed`, {}, { headers: headers() });
       setSeedResult(res.data);
     } finally {
       setSeeding(false);
@@ -58,7 +57,7 @@ export default function PlatformSchools() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await axios.delete(`${PLATFORM_API}/schools/${deleteTarget.id}`, { headers: headers() });
+      await axios.delete(`${platformApiBase()}/schools/${deleteTarget.id}`, { headers: headers() });
       setDeleteTarget(null);
       load();
     } finally {

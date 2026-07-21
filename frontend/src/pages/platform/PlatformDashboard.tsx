@@ -6,7 +6,6 @@ import {
   CloseIcon, TrendUpIcon,
 } from "../../components/icons";
 
-const PLATFORM_API = platformApiBase();
 const hdrs = () => ({ Authorization: `Bearer ${localStorage.getItem("platform_token")}` });
 
 interface Stats {
@@ -37,7 +36,7 @@ export default function PlatformDashboard() {
 
   const load = () => {
     setLoading(true); setError(false);
-    axios.get(`${PLATFORM_API}/stats`, { headers: hdrs() })
+    axios.get(`${platformApiBase()}/stats`, { headers: hdrs() })
       .then((r) => setStats(r.data))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
