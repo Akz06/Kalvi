@@ -55,6 +55,9 @@ export const env = {
   REFRESH_TOKEN_EXPIRES_DAYS: Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS ?? 30),
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "",
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  // Platform admin — validated at startup so Railway shows a clear error if missing
+  PLATFORM_ADMIN_PASSWORD:   process.env.PLATFORM_ADMIN_PASSWORD   ?? "",
+  PLATFORM_ADMIN_JWT_SECRET: process.env.PLATFORM_ADMIN_JWT_SECRET ?? "platform-dev-secret-change-me",
 };
 
 export const isTest = env.NODE_ENV === "test";

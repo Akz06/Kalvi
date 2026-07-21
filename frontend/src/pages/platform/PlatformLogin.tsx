@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { parseApiError, platformApiBase } from "../../api/client";
 import { SchoolIcon, EyeIcon, EyeOffIcon } from "../../components/icons";
 
+// Evaluated at call time — never cached at module load, so Railway env vars
+// are always resolved correctly after a fresh build.
 const PLATFORM_API = platformApiBase();
 
 export default function PlatformLogin() {

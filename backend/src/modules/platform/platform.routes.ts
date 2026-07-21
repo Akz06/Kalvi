@@ -11,12 +11,13 @@ const router = Router();
 
 // ── Platform JWT helpers ──────────────────────────────────────────────────────
 
-const PLATFORM_SECRET  = process.env.PLATFORM_ADMIN_JWT_SECRET ?? "platform-dev-secret";
-const PLATFORM_PASS    = process.env.PLATFORM_ADMIN_PASSWORD ?? "";
-const PLATFORM_HASH    = process.env.PLATFORM_ADMIN_PASSWORD_HASH ?? "";
+// Read lazily (at request time, not module load time) so Railway env vars
+// injected after startup are always picked up correctly.
+function getPlatformSecret()  { return process.env.PLATFORM_ADMIN_JWT_SECRET ?? "platform-dev-secret"; }
+function getPlatformPassword() { return process.env.PLATFORM_ADMIN_PASSWORD   ?? ""; }
 
 function signPlatformToken() {
-  return jwt.sign({ role: "PLATFORM_ADMIN" }, PLATFORM_SECRET, { expiresIn: "8h" });
+  return jwt.sign({ role: "PLATFORM_ADMIN" }, getPlatformSecret(), { expiresIn: "8h" });
 }
 
 function verifyPlatformToken(req: Request, _res: Response, next: NextFunction) {
@@ -24,7 +25,7 @@ function verifyPlatformToken(req: Request, _res: Response, next: NextFunction) {
   if (!header?.startsWith("Bearer ")) return next(Unauthorized("Missing platform token"));
   const token = header.slice(7).trim();
   try {
-    const decoded = jwt.verify(token, PLATFORM_SECRET) as any;
+    const decoded = jwt.verify(token, getPlatformSecret()) as any;
     if (decoded.role !== "PLATFORM_ADMIN") return next(Forbidden("Not a platform admin"));
     next();
   } catch {
@@ -38,12 +39,23 @@ router.post("/auth/login", asyncHandler(async (req, res) => {
   const { password } = req.body ?? {};
   if (!password) return res.status(400).json({ error: "Password is required." });
 
-  let valid = false;
-  if (PLATFORM_HASH) {
-    valid = await bcrypt.compare(password, PLATFORM_HASH);
-  } else if (PLATFORM_PASS) {
-    valid = password === PLATFORM_PASS;
+  const pass = getPlatformPassword();
+  if (!pass) {
+    return res.status(503).json({
+      error: "Platform admin is not configured. Set PLATFORM_ADMIN_PASSWORD in Railway Variables.",
+    });
   }
+
+  // Support both plain-text and bcrypt-hashed passwords
+  let valid = false;
+  if (pass.startsWith("$2")) {
+    // bcrypt hash
+    valid = await bcrypt.compare(password, pass);
+  } else {
+    // plain-text comparison (acceptable since this is a single admin secret)
+    valid = password === pass;
+  }
+
   if (!valid) return res.status(401).json({ error: "Invalid password." });
 
   svc.logActivity("LOGIN", "platform_admin", undefined, req.ip);
